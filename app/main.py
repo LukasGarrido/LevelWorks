@@ -11,6 +11,9 @@ from fastapi.staticfiles import StaticFiles
 from app.config import get_settings
 from app.database import init_db
 from app.routes import views, api
+# Importar modelos para que SQLAlchemy los registre en Base.metadata
+from app import models
+
 
 
 settings = get_settings()

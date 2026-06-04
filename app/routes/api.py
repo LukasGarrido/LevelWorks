@@ -24,6 +24,7 @@ templates = Jinja2Templates(directory="app/templates")
 #     # Calcular horas libres
 #     horas = ["09:00", "10:00", "11:00", "14:00", "15:00"]
 #     return templates.TemplateResponse(
-#         "components/horas_disponibles.html",
-#         {"request": request, "horas": horas, "fecha": fecha},
+#         request=request,
+#         name="components/horas_disponibles.html",
+#         context={"horas": horas, "fecha": fecha},
 #     )

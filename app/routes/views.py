@@ -15,6 +15,7 @@ templates = Jinja2Templates(directory="app/templates")
 async def home(request: Request):
     """Página principal – formulario de reserva de citas."""
     return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "title": "Xperience – Reserva tu cita"},
+        request=request,
+        name="index.html",
+        context={"title": "Xperience – Reserva tu cita"},
     )
