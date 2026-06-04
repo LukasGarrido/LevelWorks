@@ -3,7 +3,7 @@ app/config.py
 Configuración centralizada del proyecto usando variables de entorno.
 """
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
 
@@ -14,8 +14,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "changeme"
     DATABASE_URL: str = "sqlite+aiosqlite:///./xperience.db"
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
 @lru_cache
