@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-2xl">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Reserva tu cita</h1>
+
+    <!-- =============================================================== -->
+    <!-- TODO: Formulario de reserva                                     -->
+    <!-- Campos sugeridos:                                               -->
+    <!--   - Nombre del cliente                                          -->
+    <!--   - Email                                                       -->
+    <!--   - Teléfono                                                    -->
+    <!--   - Servicio (select cargado desde la base de datos)            -->
+    <!--   - Fecha (input type="date")                                   -->
+    <!--   - Hora (se carga dinámicamente con HTMX al seleccionar fecha) -->
+    <!-- =============================================================== -->
+
+    <form class="space-y-6 bg-white p-6 rounded-2xl shadow">
+
+        <p class="text-gray-500 italic">
+            Formulario de reserva – pendiente de implementar.
+        </p>
+
+        <!-- Ejemplo de cómo cargar horas disponibles con HTMX:
+        <input type="date" name="fecha"
+               hx-get="/api/horas-disponibles"
+               hx-target="#horas-container"
+               hx-trigger="change"
+               class="..." />
+
+        <div id="horas-container">
+            {{/* Aquí se inyecta el fragmento de horas disponibles */}}
+        </div>
+        -->
+
+    </form>
+</section>
+{% endblock %}

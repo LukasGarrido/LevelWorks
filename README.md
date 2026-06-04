@@ -15,17 +15,25 @@ Un sistema de gestión y reserva de citas optimizado para negocios de autolavado
 ## Estructura del Proyecto
 
 ```text
-carwash-flow/
-├── app/
-│   ├── main.py             # Punto de entrada de FastAPI
-│   ├── database.py         # Configuración de base de datos y ORM
-│   ├── models.py           # Modelos relacionales (Clientes, Reservas, Servicios)
-│   ├── routes/             # Endpoints (API y Vistas HTML)
-│   └── templates/          # Plantillas Jinja2
-│       ├── base.html       # Estructura principal
-│       ├── index.html      # Pantalla de reserva del cliente
-│       └── components/     # Fragmentos HTMX (ej. horas_disponibles.html)
-├── Dockerfile              # Configuración de la imagen del contenedor
-├── docker-compose.yml      # Orquestación de servicios
-├── requirements.txt        # Dependencias de Python
-└── README.md               # Documentación
+xperience/
+├── .env                          # Variables de entorno (actualizado con DB_HOST/DB_PORT)
+├── .gitignore                    # Reglas completas para Python, IDEs, Docker
+├── Dockerfile                    # Imagen Python 3.12-slim + uvicorn con hot-reload
+├── docker-compose.yml            # PostgreSQL 16 + App web con healthcheck
+├── requirements.txt              # Tus dependencias + pydantic-settings añadido
+├── README.md
+└── app/
+    ├── __init__.py
+    ├── config.py                 # Configuración centralizada (pydantic-settings + .env)
+    ├── database.py               # Engine async SQLAlchemy + sesión + init_db()
+    ├── main.py                   # Punto de entrada FastAPI (lifespan, routers)
+    ├── models.py                 # Client, Service, Reservation (con enum de estados)
+    ├── routes/
+    │   ├── __init__.py
+    │   ├── views.py              # Rutas HTML (página principal)
+    │   └── api.py                # Endpoints HTMX (con ejemplo comentado)
+    └── templates/
+        ├── base.html             # Esqueleto HTML (Tailwind CDN + HTMX)
+        ├── index.html            # Página de reservas (con guía de HTMX inline)
+        └── components/
+            └── horas_disponibles.html  # Fragmento HTMX para horas libres

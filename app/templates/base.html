@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Xperience – Sistema de gestión y reserva de citas para autolavado.">
+
+    <title>{% block title %}Xperience{% endblock %}</title>
+
+    <!-- Tailwind CSS (CDN – sin Node.js) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+    {% block head %}{% endblock %}
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900 antialiased">
+
+    <!-- ============================================================= -->
+    <!-- NAV -->
+    <!-- ============================================================= -->
+    <nav class="bg-white shadow">
+        <div class="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
+            <a href="/" class="text-xl font-bold tracking-tight text-indigo-600">
+                Xperience
+            </a>
+            {% block nav_extra %}{% endblock %}
+        </div>
+    </nav>
+
+    <!-- ============================================================= -->
+    <!-- CONTENIDO PRINCIPAL -->
+    <!-- ============================================================= -->
+    <main class="mx-auto max-w-7xl px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ============================================================= -->
+    <!-- FOOTER -->
+    <!-- ============================================================= -->
+    <footer class="mt-auto border-t bg-white">
+        <div class="mx-auto max-w-7xl px-4 py-4 text-center text-sm text-gray-500">
+            &copy; {{ now().year if now is defined else "2026" }} Xperience. Todos los derechos reservados.
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
