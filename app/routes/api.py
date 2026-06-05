@@ -98,7 +98,6 @@ async def crear_reserva(
         )
 
     try:
-        # Combinar fecha y hora
         fecha_hora_str = f"{fecha}T{hora}"
         fecha_hora = datetime.fromisoformat(fecha_hora_str)
     except ValueError:

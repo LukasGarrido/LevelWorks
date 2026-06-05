@@ -1,47 +1,82 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full bg-black">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Xperience – Sistema de gestión y reserva de citas para autolavado.">
+    <meta name="description" content="Xperience – Detailing de ultra alta gama.">
 
     <title>{% block title %}Xperience{% endblock %}</title>
 
-    <!-- Tailwind CSS (CDN – sin Node.js) -->
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
 
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 
     {% block head %}{% endblock %}
 </head>
-<body class="min-h-screen bg-gray-50 text-gray-900 antialiased">
+<body class="h-full bg-black text-white antialiased font-sans flex flex-col selection:bg-neutral-800 selection:text-white">
 
     <!-- ============================================================= -->
-    <!-- NAV -->
+    <!-- HEADER (Basado exactamente en image.png) -->
     <!-- ============================================================= -->
-    <nav class="bg-white shadow">
-        <div class="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
-            <a href="/" class="text-xl font-bold tracking-tight text-indigo-600">
-                Xperience
+    <header class="w-full bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="mx-auto max-w-7xl px-8 h-24 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="/" class="text-2xl font-bold tracking-tight text-white hover:opacity-90 transition-opacity">
+                Xperience<span class="text-blue-600">.</span>
             </a>
-            {% block nav_extra %}{% endblock %}
+            
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex items-center gap-10">
+                <a href="#servicios" class="text-sm font-medium text-neutral-400 hover:text-white transition-colors duration-200">Servicios</a>
+                <a href="#galeria" class="text-sm font-medium text-neutral-400 hover:text-white transition-colors duration-200">Galería</a>
+                <a href="#reserva" class="text-sm font-medium text-neutral-400 hover:text-white transition-colors duration-200">Reserva</a>
+            </nav>
+
+            <!-- Agendar Turno CTA Button -->
+            <div>
+                <a href="#reserva" class="bg-white text-black font-semibold text-sm px-6 py-2.5 rounded-full hover:bg-neutral-200 transition-all duration-200">
+                    Agendar Turno
+                </a>
+            </div>
         </div>
-    </nav>
+    </header>
 
     <!-- ============================================================= -->
     <!-- CONTENIDO PRINCIPAL -->
     <!-- ============================================================= -->
-    <main class="mx-auto max-w-7xl px-4 py-8">
+    <main class="flex-grow flex flex-col justify-center">
         {% block content %}{% endblock %}
     </main>
 
     <!-- ============================================================= -->
     <!-- FOOTER -->
     <!-- ============================================================= -->
-    <footer class="mt-auto border-t bg-white">
-        <div class="mx-auto max-w-7xl px-4 py-4 text-center text-sm text-gray-500">
-            &copy; {{ now().year if now is defined else "2026" }} Xperience. Todos los derechos reservados.
+    <footer class="bg-black border-t border-neutral-900 py-10 text-neutral-600">
+        <div class="mx-auto max-w-7xl px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+            <p>&copy; {{ now().year if now is defined else "2026" }} Xperience. Detailing de ultra alta gama.</p>
+            <div class="flex gap-6">
+                <a href="#" class="hover:text-neutral-400 transition-colors">Términos</a>
+                <a href="#" class="hover:text-neutral-400 transition-colors">Privacidad</a>
+                <a href="#" class="hover:text-neutral-400 transition-colors">Contacto</a>
+            </div>
         </div>
     </footer>
 

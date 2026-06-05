@@ -1,39 +1,38 @@
 {% extends "base.html" %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block title %}Xperience — Arte & Precisión en cada detalle{% endblock %}
 
 {% block content %}
-<section class="mx-auto max-w-2xl">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">Reserva tu cita</h1>
+<section class="mx-auto max-w-7xl px-8 py-20 flex flex-col items-center justify-center text-center">
 
-    <!-- =============================================================== -->
-    <!-- TODO: Formulario de reserva                                     -->
-    <!-- Campos sugeridos:                                               -->
-    <!--   - Nombre del cliente                                          -->
-    <!--   - Email                                                       -->
-    <!--   - Teléfono                                                    -->
-    <!--   - Servicio (select cargado desde la base de datos)            -->
-    <!--   - Fecha (input type="date")                                   -->
-    <!--   - Hora (se carga dinámicamente con HTMX al seleccionar fecha) -->
-    <!-- =============================================================== -->
+    <div
+        class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-neutral-800 bg-[#0a0a0c] mb-8 animate-fade-in">
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+        <span class="text-xs font-semibold text-neutral-400 tracking-wide">Detailing de ultra alta gama</span>
+    </div>
 
-    <form class="space-y-6 bg-white p-6 rounded-2xl shadow">
+    <h1 class="text-5xl md:text-7xl font-black tracking-tight leading-[1.1] mb-8 font-sans max-w-4xl">
+        <span class="text-white block">Arte & Precisión</span>
+        <span class="text-neutral-600 block">en cada detalle.</span>
+    </h1>
 
-        <p class="text-gray-500 italic">
-            Formulario de reserva – pendiente de implementar.
-        </p>
+    <p class="text-neutral-400 text-base md:text-lg max-w-2xl leading-relaxed mb-12 font-medium">
+        Cuidamos tu vehículo como una obra de arte. Técnicas avanzadas, productos premium y un equipo obsesionado con la
+        perfección.
+    </p>
 
-        <!-- Ejemplo de cómo cargar horas disponibles con HTMX:
-        <input type="date" name="fecha"
-               hx-get="/api/horas-disponibles"
-               hx-target="#horas-container"
-               hx-trigger="change"
-               class="..." />
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#reserva"
+            class="w-full sm:w-auto bg-white text-black font-bold text-sm px-8 py-4 rounded-full hover:bg-neutral-200 transition-all duration-200 shadow-xl shadow-white/5 flex items-center justify-center gap-2">
+            <span>Reservar mi experiencia</span>
+            <span class="text-lg leading-none">→</span>
+        </a>
 
-        <div id="horas-container">
-        </div>
-        -->
+        <a href="#servicios"
+            class="w-full sm:w-auto border border-neutral-800 text-neutral-300 font-bold text-sm px-8 py-4 rounded-full hover:bg-neutral-900/40 hover:text-white transition-all duration-200 flex items-center justify-center">
+            Ver servicios
+        </a>
+    </div>
 
-    </form>
 </section>
 {% endblock %}
