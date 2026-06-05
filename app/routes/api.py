@@ -31,7 +31,7 @@ async def obtener_horas_disponibles(
         fecha_obj = date.fromisoformat(fecha)
     except ValueError:
         return HTMLResponse(
-            "<p class='text-sm text-red-500'>Fecha inválida.</p>",
+            "<div class='p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium'>Fecha inválida.</div>",
             status_code=400
         )
 
@@ -91,8 +91,8 @@ async def crear_reserva(
     """
     if not hora:
         return HTMLResponse(
-            "<div class='p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50' role='alert'>"
-            "Por favor, selecciona una hora para tu reserva."
+            "<div class='p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium' role='alert'>"
+            "Por favor, seleccioná una hora para tu reserva."
             "</div>",
             status_code=400
         )
@@ -102,7 +102,7 @@ async def crear_reserva(
         fecha_hora = datetime.fromisoformat(fecha_hora_str)
     except ValueError:
         return HTMLResponse(
-            "<div class='p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50' role='alert'>"
+            "<div class='p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium' role='alert'>"
             "Formato de fecha u hora incorrecto."
             "</div>",
             status_code=400
@@ -129,8 +129,8 @@ async def crear_reserva(
 
     if conflicto:
         return HTMLResponse(
-            "<div class='p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50' role='alert'>"
-            "Lo sentimos, ese horario ya ha sido reservado. Por favor elige otro."
+            "<div class='p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium' role='alert'>"
+            "Lo sentimos, ese horario ya ha sido reservado. Por favor elegí otro."
             "</div>"
         )
 
@@ -145,16 +145,21 @@ async def crear_reserva(
     db.add(nueva_reserva)
     await db.commit()
 
-    # Retornar mensaje de éxito estilizado en Tailwind
+    # Retornar mensaje de éxito estilizado en dark theme
     return HTMLResponse(
-        f"<div class='p-6 rounded-2xl bg-green-50 border border-green-200 text-center space-y-3'>"
-        f"  <h3 class='text-lg font-bold text-green-800'>¡Reserva agendada con éxito!</h3>"
-        f"  <p class='text-sm text-green-700'>"
-        f"    Hola <strong>{nombre}</strong>, tu cita ha sido registrada para el "
-        f"    <strong>{fecha}</strong> a las <strong>{hora}</strong>."
+        f"<div class='p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-3'>"
+        f"  <div class='flex items-center justify-center gap-2 mb-2'>"
+        f"    <svg class='w-6 h-6 text-emerald-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>"
+        f"      <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/>"
+        f"    </svg>"
+        f"    <h3 class='text-lg font-bold text-emerald-400'>¡Reserva agendada con éxito!</h3>"
+        f"  </div>"
+        f"  <p class='text-sm text-neutral-300'>"
+        f"    Hola <strong class='text-white'>{nombre}</strong>, tu cita ha sido registrada para el "
+        f"    <strong class='text-white'>{fecha}</strong> a las <strong class='text-white'>{hora}</strong>."
         f"  </p>"
-        f"  <p class='text-xs text-green-600 italic'>"
-        f"    El estado de tu cita es: Pendiente de confirmación."
+        f"  <p class='text-xs text-neutral-500 italic mt-2'>"
+        f"    Estado: Pendiente de confirmación."
         f"  </p>"
         f"</div>"
     )

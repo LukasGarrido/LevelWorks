@@ -4,21 +4,29 @@
 <!-- ================================================================= -->
 
 {% if horas %}
-<label class="block text-sm font-medium text-gray-700 mb-2">
-    Horas disponibles para {{ fecha }}
-</label>
-<div class="grid grid-cols-3 gap-2">
+<div class="flex flex-wrap gap-3">
     {% for hora in horas %}
     <button type="button"
-            class="rounded-lg border border-indigo-300 px-3 py-2 text-sm text-indigo-700
-                   hover:bg-indigo-600 hover:text-white transition-colors
-                   focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            onclick="this.closest('form').querySelector('[name=hora]').value='{{ hora }}'">
+            class="hora-btn rounded-xl border border-neutral-800 bg-neutral-900 px-5 py-3 text-sm font-medium text-neutral-300
+                   hover:border-neutral-600 hover:text-white transition-all duration-200
+                   focus:outline-none"
+            onclick="selectHora(this, '{{ hora }}')">
         {{ hora }}
     </button>
     {% endfor %}
 </div>
-<input type="hidden" name="hora" value="">
+<input type="hidden" name="hora" id="hora-input" value="">
+<script>
+    function selectHora(btn, hora) {
+        document.querySelectorAll('.hora-btn').forEach(b => {
+            b.classList.remove('border-blue-600', 'bg-blue-600/10', 'text-white');
+            b.classList.add('border-neutral-800', 'bg-neutral-900', 'text-neutral-300');
+        });
+        btn.classList.remove('border-neutral-800', 'bg-neutral-900', 'text-neutral-300');
+        btn.classList.add('border-blue-600', 'bg-blue-600/10', 'text-white');
+        document.getElementById('hora-input').value = hora;
+    }
+</script>
 {% else %}
-<p class="text-sm text-red-500">No hay horas disponibles para {{ fecha }}.</p>
+<p class="text-neutral-500 text-sm">No hay horarios disponibles para esta fecha.</p>
 {% endif %}

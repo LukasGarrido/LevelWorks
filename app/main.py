@@ -39,6 +39,7 @@ app = FastAPI(
 # ---------------------------------------------------------------------------
 # Descomenta la siguiente línea cuando crees la carpeta app/static/
 # app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/img", StaticFiles(directory="app/img"), name="img")
 
 # ---------------------------------------------------------------------------
 # Registrar routers
