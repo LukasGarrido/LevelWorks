@@ -3,28 +3,159 @@ app/routes/api.py
 Endpoints HTMX – devuelven fragmentos HTML parciales.
 """
 
-from fastapi import APIRouter, Request
+from datetime import datetime, date, time
+from fastapi import APIRouter, Request, Depends, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+from app.database import get_db
+from app.models import Client, Service, Reservation, ReservationStatus
 
 router = APIRouter(prefix="/api")
 templates = Jinja2Templates(directory="app/templates")
 
+#El usuario elige un día en la web, y nosotros le respondemos con una lista de horas libres.
+@router.get("/horas-disponibles", response_class=HTMLResponse)
+async def obtener_horas_disponibles(
+    request: Request,
+    fecha: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Calcula y devuelve las horas disponibles para una fecha seleccionada.
+    Filtra las horas que ya están reservadas en la base de datos.
+    """
+    try:
+        fecha_obj = date.fromisoformat(fecha)
+    except ValueError:
+        return HTMLResponse(
+            "<p class='text-sm text-red-500'>Fecha inválida.</p>",
+            status_code=400
+        )
 
-# ---------------------------------------------------------------------------
-# TODO: Implementar los endpoints HTMX
-# ---------------------------------------------------------------------------
-#
-# Ejemplo de endpoint para obtener horas disponibles:
-#
-# @router.get("/horas-disponibles", response_class=HTMLResponse)
-# async def horas_disponibles(request: Request, fecha: str):
-#     """Devuelve un fragmento HTML con las horas disponibles para una fecha."""
-#     # Consultar la base de datos para obtener horas ocupadas
-#     # Calcular horas libres
-#     horas = ["09:00", "10:00", "11:00", "14:00", "15:00"]
-#     return templates.TemplateResponse(
-#         request=request,
-#         name="components/horas_disponibles.html",
-#         context={"horas": horas, "fecha": fecha},
-#     )
+    # 1. Definir rango del día (desde las 00:00 hasta las 23:59)
+    inicio_dia = datetime.combine(fecha_obj, time.min)
+    fin_dia = datetime.combine(fecha_obj, time.max)
+
+    # 2. Consultar las reservas que ya existen para ese día y que no estén canceladas
+    stmt = select(Reservation).where(
+        Reservation.scheduled_at >= inicio_dia,
+        Reservation.scheduled_at <= fin_dia,
+        Reservation.status != ReservationStatus.CANCELADA
+    )
+    result = await db.execute(stmt)
+    reservas_existentes = result.scalars().all()
+
+    # 3. Mapear horas ocupadas en formato HH:MM
+    horas_ocupadas = {
+        reserva.scheduled_at.strftime("%H:%M")
+        for reserva in reservas_existentes
+    }
+
+    # 4. Definir horario de atención del autolavado (ej: 09:00 a 17:00)
+    horario_total = [
+        "09:00", "10:00", "11:00", "12:00", "13:00",
+        "14:00", "15:00", "16:00", "17:00"
+    ]
+
+    # 5. Filtrar las horas que no están ocupadas
+    horas_disponibles = [h for h in horario_total if h not in horas_ocupadas]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="components/horas_disponibles.html",
+        context={
+            "horas": horas_disponibles,
+            "fecha": fecha
+        }
+    )
+
+
+@router.post("/reservas", response_class=HTMLResponse)
+async def crear_reserva(
+    request: Request,
+    nombre: str = Form(...),
+    email: str = Form(...),
+    telefono: str = Form(...),
+    servicio_id: int = Form(...),
+    fecha: str = Form(...),
+    hora: str = Form(...),
+    notas: str = Form(None),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Procesa el formulario de reservas, crea o recupera el cliente
+    y agenda la cita en la base de datos.
+    """
+    if not hora:
+        return HTMLResponse(
+            "<div class='p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50' role='alert'>"
+            "Por favor, selecciona una hora para tu reserva."
+            "</div>",
+            status_code=400
+        )
+
+    try:
+        # Combinar fecha y hora
+        fecha_hora_str = f"{fecha}T{hora}"
+        fecha_hora = datetime.fromisoformat(fecha_hora_str)
+    except ValueError:
+        return HTMLResponse(
+            "<div class='p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50' role='alert'>"
+            "Formato de fecha u hora incorrecto."
+            "</div>",
+            status_code=400
+        )
+
+    # 1. Buscar si el cliente ya existe por email
+    stmt_cliente = select(Client).where(Client.email == email)
+    result_cliente = await db.execute(stmt_cliente)
+    cliente = result_cliente.scalar_one_or_none()
+
+    # Si no existe, crearlo
+    if not cliente:
+        cliente = Client(name=nombre, email=email, phone=telefono)
+        db.add(cliente)
+        await db.flush()  # Obtener el ID generado antes del commit
+
+    # 2. Verificar disponibilidad de último segundo
+    stmt_dispo = select(Reservation).where(
+        Reservation.scheduled_at == fecha_hora,
+        Reservation.status != ReservationStatus.CANCELADA
+    )
+    result_dispo = await db.execute(stmt_dispo)
+    conflicto = result_dispo.scalar_one_or_none()
+
+    if conflicto:
+        return HTMLResponse(
+            "<div class='p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50' role='alert'>"
+            "Lo sentimos, ese horario ya ha sido reservado. Por favor elige otro."
+            "</div>"
+        )
+
+    # 3. Crear la reserva
+    nueva_reserva = Reservation(
+        client_id=cliente.id,
+        service_id=servicio_id,
+        scheduled_at=fecha_hora,
+        status=ReservationStatus.PENDIENTE,
+        notes=notas
+    )
+    db.add(nueva_reserva)
+    await db.commit()
+
+    # Retornar mensaje de éxito estilizado en Tailwind
+    return HTMLResponse(
+        f"<div class='p-6 rounded-2xl bg-green-50 border border-green-200 text-center space-y-3'>"
+        f"  <h3 class='text-lg font-bold text-green-800'>¡Reserva agendada con éxito!</h3>"
+        f"  <p class='text-sm text-green-700'>"
+        f"    Hola <strong>{nombre}</strong>, tu cita ha sido registrada para el "
+        f"    <strong>{fecha}</strong> a las <strong>{hora}</strong>."
+        f"  </p>"
+        f"  <p class='text-xs text-green-600 italic'>"
+        f"    El estado de tu cita es: Pendiente de confirmación."
+        f"  </p>"
+        f"</div>"
+    )
