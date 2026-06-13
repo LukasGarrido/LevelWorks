@@ -235,55 +235,27 @@
     <div
         class="w-full grid grid-cols-1 md:grid-cols-2 rounded-xl border border-neutral-800/80 overflow-hidden bg-black">
 
-        <div
-            class="p-8 lg:p-14 border-b border-neutral-800/80 md:border-r flex flex-col justify-between h-72 hover:bg-white/[0.02] transition-colors duration-300">
-            <div class="flex justify-between items-center text-xs">
-                <span class="text-neutral-600 font-mono tracking-wider">01</span>
-                <span class="text-neutral-400">Desde $45</span>
-            </div>
-            <div class="mt-auto">
-                <h3 class="text-2xl lg:text-3xl font-medium text-white mb-6 tracking-tight">Lavado Premium Exterior</h3>
-                <div class="w-8 h-[1px] bg-neutral-700"></div>
-            </div>
-        </div>
+        {% for servicio in servicios %}
+        <div class="p-8 lg:p-14 flex flex-col justify-between h-72 hover:bg-white/[0.02] transition-colors duration-300
+        {# Truco de Tailwind para mantener los bordes limpios en la cuadrícula de 2 columnas #}
+        border-b border-neutral-800/80 
+        {% if loop.index is odd %}md:border-r{% endif %}
+        {% if loop.last or (loop.length == 4 and loop.index > 2) %}md:border-b-0{% endif %}">
 
-        <div
-            class="p-8 lg:p-14 border-b border-neutral-800/80 flex flex-col justify-between h-72 hover:bg-white/[0.02] transition-colors duration-300">
             <div class="flex justify-between items-center text-xs">
-                <span class="text-neutral-600 font-mono tracking-wider">02</span>
-                <span class="text-neutral-400">Desde $120</span>
+                <span class="text-neutral-600 font-mono tracking-wider">0{{ loop.index }}</span>
+                <span class="text-neutral-400">Desde ${{ "{:,.0f}".format(servicio.price) }}</span>
             </div>
+
             <div class="mt-auto">
-                <h3 class="text-2xl lg:text-3xl font-medium text-white mb-6 tracking-tight">Detailing Completo Interior
+                <h3 class="text-2xl lg:text-3xl font-medium text-white mb-6 tracking-tight">
+                    {{ servicio.name }}
                 </h3>
+                <p class="text-xs text-neutral-500 mb-2 font-mono">// {{ servicio.duration_minutes }} MIN</p>
                 <div class="w-8 h-[1px] bg-neutral-700"></div>
             </div>
         </div>
-
-        <div
-            class="p-8 lg:p-14 border-b md:border-b-0 border-neutral-800/80 md:border-r flex flex-col justify-between h-72 hover:bg-white/[0.02] transition-colors duration-300">
-            <div class="flex justify-between items-center text-xs">
-                <span class="text-neutral-600 font-mono tracking-wider">03</span>
-                <span class="text-neutral-400">Desde $380</span>
-            </div>
-            <div class="mt-auto">
-                <h3 class="text-2xl lg:text-3xl font-medium text-white mb-6 tracking-tight">Corrección de Pintura</h3>
-                <div class="w-8 h-[1px] bg-neutral-700"></div>
-            </div>
-        </div>
-
-        <div
-            class="p-8 lg:p-14 flex flex-col justify-between h-72 hover:bg-white/[0.02] transition-colors duration-300">
-            <div class="flex justify-between items-center text-xs">
-                <span class="text-neutral-600 font-mono tracking-wider">04</span>
-                <span class="text-neutral-400">Desde $850</span>
-            </div>
-            <div class="mt-auto">
-                <h3 class="text-2xl lg:text-3xl font-medium text-white mb-6 tracking-tight">Recubrimiento Cerámico 9H
-                </h3>
-                <div class="w-8 h-[1px] bg-neutral-700"></div>
-            </div>
-        </div>
+        {% endfor %}
 
     </div>
 

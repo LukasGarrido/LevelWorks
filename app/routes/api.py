@@ -4,7 +4,7 @@ Endpoints HTMX – devuelven fragmentos HTML parciales.
 """
 
 from datetime import datetime, date, time
-from fastapi import APIRouter, Request, Depends, Form
+from fastapi import APIRouter, Request, Depends, Form, HTTPException, status
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,9 +13,112 @@ from sqlalchemy import select
 from app.database import get_db
 from app.models import Client, Service, Reservation, ReservationStatus
 
+from pydantic import BaseModel
+
+class ServiceSchema(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    duration_minutes: int = 30
+
 router = APIRouter(prefix="/api")
 templates = Jinja2Templates(directory="app/templates")
 
+#Endpoints para cargar, editar y eliminar servicios en la api
+@router.post("/admin/cargar-servicios")
+async def cargar_servicios(
+    servicio_in: ServiceSchema,
+    db: AsyncSession = Depends(get_db)
+):  
+    try:
+        nuevo_servicio = Service(**servicio_in.model_dump())
+        db.add(nuevo_servicio)
+        await db.commit()
+        await db.refresh(nuevo_servicio)
+        return {"mensaje":"Servicio cargado correctamente"} 
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error al cargar: {str(e)}")
+
+@router.get("/admin/listado/servicios")
+async def obtener_listado_servicios(
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        stmt=select(Service).order_by(Service.id)
+        result = await db.execute(stmt)
+        servicios = result.scalars().all()
+        return servicios
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error al obtener servicios: {str(e)}")
+
+@router.delete("/admin/eliminar-servicios/{id}")
+async def eliminar_servicio(
+    id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        stmt = select(Service).where(Service.id == id)
+        result = await db.execute(stmt)
+        servicio = result.scalar_one_or_none()
+        if not servicio:
+            raise HTTPException(status_code=404, detail="Servicio no encontrado")
+        await db.delete(servicio)
+        await db.commit()
+        return {"mensaje": "Servicio eliminado correctamente"}
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error al eliminar servicio: {str(e)}")
+
+@router.put("/admin/editar-servicios/{id}")
+async def editar_servicio(
+    id: int,
+    servicio_in: ServiceSchema,
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        stmt = select(Service).where(Service.id == id)
+        result = await db.execute(stmt)
+        servicio = result.scalar_one_or_none()
+        if not servicio:
+            raise HTTPException(status_code=404, detail="Servicio no encontrado")
+        servicio.name = servicio_in.name
+        servicio.description = servicio_in.description
+        servicio.price = servicio_in.price
+        servicio.duration_minutes = servicio_in.duration_minutes
+        await db.commit()
+        await db.refresh(servicio)
+        return {"mensaje": "Servicio editado correctamente"}
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error al editar servicio: {str(e)}")
+
+#------------------------------------------------------------------------------------------------------------------
+
+#mostrar servicios en home princial y seleccionar servicio
+@router.get("/servicios", response_class=HTMLResponse)
+async def obtener_servicios(
+    request: Request, 
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        stmt = select(Service).order_by(Service.id)
+        result = await db.execute(stmt)
+        servicios = result.scalars().all()
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={"servicios": servicios},
+        )
+    except Exception as e:
+        error_html = """
+        <div class="col-span-full text-center p-8 border border-neutral-800 rounded-xl bg-black">
+            <p class="text-neutral-500 text-sm">Servicios no disponibles temporalmente.</p>
+        </div>
+        """
+        return HTMLResponse(content=error_html, status_code=200)
+
+        
 #El usuario elige un día en la web, y nosotros le respondemos con una lista de horas libres.
 @router.get("/horas-disponibles", response_class=HTMLResponse)
 async def obtener_horas_disponibles(
