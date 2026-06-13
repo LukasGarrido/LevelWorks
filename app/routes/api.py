@@ -93,6 +93,49 @@ async def editar_servicio(
         await db.rollback()
         raise HTTPException(status_code=400, detail=f"Error al editar servicio: {str(e)}")
 
+
+#Endpoints para ver reservas
+@router.get("/admin/listado/reservas")
+async def obtener_reservas(
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        stmt = select(Reservation).order_by(Reservation.id)
+        result = await db.execute(stmt)
+        reservas = result.scalars().all()
+        return reservas
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error al obtener reservas: {str(e)}")
+
+@router.get("/admin/listado/clientes")
+async def obtener_clientes(
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        stmt = select(Client).order_by(Client.id)
+        result = await db.execute(stmt)
+        clientes = result.scalars().all()
+        return clientes
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error al obtener clientes: {str(e)}")
+
+@router.get("/admin/listado/reservas/{id}")
+async def obtener_reserva(
+    id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        stmt = select(Reservation).where(Reservation.id == id)
+        result = await db.execute(stmt)
+        reserva = result.scalar_one_or_none()
+        if not reserva:
+            raise HTTPException(status_code=404, detail="Reserva no encontrada")
+        return reserva
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error al obtener reserva: {str(e)}")
+
+
+
 #------------------------------------------------------------------------------------------------------------------
 
 #mostrar servicios en home princial y seleccionar servicio

@@ -40,7 +40,7 @@
     class="h-full bg-black text-white antialiased font-sans flex flex-col selection:bg-neutral-800 selection:text-white">
 
 
-    <header class="w-full bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+    <header class="w-full bg-black/80 backdrop-blur-md fixed top-0 left-0 right-0 z-50 border-b border-neutral-900/50 transition-all duration-300">
         <div class="mx-auto max-w-7xl px-8 h-24 flex items-center justify-between">
             <a href="/" class="text-2xl font-bold tracking-tight text-white hover:opacity-90 transition-opacity">
                 Xperience<span class="text-blue-600">.</span>
@@ -63,7 +63,7 @@
             </div>
         </div>
     </header>
-    <main class="flex-grow flex flex-col justify-center">
+    <main class="flex-grow flex flex-col justify-center pt-24">
         {% block content %}{% endblock %}
     </main>
 
