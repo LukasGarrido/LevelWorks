@@ -24,7 +24,9 @@ class ServiceSchema(BaseModel):
 router = APIRouter(prefix="/api")
 templates = Jinja2Templates(directory="app/templates")
 
-#Endpoints para cargar, editar y eliminar servicios en la api
+
+#ENDPOINTS para parte administrativa
+
 @router.post("/admin/cargar-servicios")
 async def cargar_servicios(
     servicio_in: ServiceSchema,
@@ -137,6 +139,8 @@ async def obtener_reserva(
 
 
 #------------------------------------------------------------------------------------------------------------------
+
+#ENDPOINTS para parte web
 
 #mostrar servicios en home princial y seleccionar servicio
 @router.get("/servicios", response_class=HTMLResponse)

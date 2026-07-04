@@ -7,9 +7,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from sqladmin import Admin, ModelView
 
 from app.config import get_settings
-from app.database import init_db
+from app.database import init_db, engine
 from app.routes import views, api
 # Importar modelos para que SQLAlchemy los registre en Base.metadata
 from app import models
@@ -33,6 +34,30 @@ app = FastAPI(
     debug=settings.DEBUG,
     lifespan=lifespan,
 )
+
+# ---------------------------------------------------------------------------
+# SQLAdmin Configuración
+# ---------------------------------------------------------------------------
+admin = Admin(app, engine)
+
+class ServiceAdmin(ModelView, model=models.Service):
+    column_list = [models.Service.id, models.Service.name, models.Service.price, models.Service.duration_minutes]
+    column_searchable_list = [models.Service.name]
+    form_columns = [models.Service.name, models.Service.description, models.Service.price, models.Service.duration_minutes]
+    icon = "fa-solid fa-car"
+
+class ClientAdmin(ModelView, model=models.Client):
+    column_list = [models.Client.id, models.Client.name, models.Client.email, models.Client.phone]
+    column_searchable_list = [models.Client.name, models.Client.email]
+    icon = "fa-solid fa-users"
+
+class ReservationAdmin(ModelView, model=models.Reservation):
+    column_list = [models.Reservation.id, models.Reservation.client_id, models.Reservation.service_id, models.Reservation.scheduled_at, models.Reservation.status]
+    icon = "fa-solid fa-calendar-check"
+
+admin.add_view(ServiceAdmin)
+admin.add_view(ClientAdmin)
+admin.add_view(ReservationAdmin)
 
 # ---------------------------------------------------------------------------
 # Archivos estáticos (CSS, JS, imágenes)
