@@ -35,9 +35,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ---------------------------------------------------------------------------
 # SQLAdmin Configuración
-# ---------------------------------------------------------------------------
 admin = Admin(app, engine)
 
 class ServiceAdmin(ModelView, model=models.Service):
@@ -59,15 +57,9 @@ admin.add_view(ServiceAdmin)
 admin.add_view(ClientAdmin)
 admin.add_view(ReservationAdmin)
 
-# ---------------------------------------------------------------------------
-# Archivos estáticos (CSS, JS, imágenes)
-# ---------------------------------------------------------------------------
-# Descomenta la siguiente línea cuando crees la carpeta app/static/
-# app.mount("/static", StaticFiles(directory="app/static"), name="static")
+# Archivos estáticos
 app.mount("/img", StaticFiles(directory="app/img"), name="img")
 
-# ---------------------------------------------------------------------------
 # Registrar routers
-# ---------------------------------------------------------------------------
 app.include_router(views.router)
 app.include_router(api.router)
