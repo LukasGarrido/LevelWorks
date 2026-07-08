@@ -63,6 +63,7 @@ class Service(Base):
     name = Column(String(150), nullable=False)
     description = Column(Text, nullable=True)
     price = Column(Float, nullable=False)
+    photo = Column(String(255), nullable=True)
     duration_minutes = Column(Integer, nullable=False, default=30)
     created_at = Column(DateTime, default=datetime.utcnow)
 

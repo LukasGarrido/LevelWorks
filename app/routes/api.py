@@ -88,6 +88,7 @@ async def editar_servicio(
         servicio.description = servicio_in.description
         servicio.price = servicio_in.price
         servicio.duration_minutes = servicio_in.duration_minutes
+        servicio.photo = servicio_in.photo
         await db.commit()
         await db.refresh(servicio)
         return {"mensaje": "Servicio editado correctamente"}
