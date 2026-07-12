@@ -11,9 +11,40 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.database import get_db
-from app.models import Client, Service, Reservation, ReservationStatus
+from app.models import User, Permission, Rol, Client, Service, Reservation, ReservationStatus
 
 from pydantic import BaseModel
+
+
+class UserRegisterSchema(BaseModel):
+    username: str
+    email: str
+    password: str
+    rol: Rol
+    permissions: list[Permission]
+
+class UserLoginSchema(BaseModel):
+    email: str
+    password: str
+
+class UserUpdateSchema(BaseModel):
+    username: str | None = None
+    email: str | None = None
+    password: str | None = None
+    rol: Rol | None = None
+    permissions: list[Permission] | None = None
+
+
+class ClientSchema(BaseModel):
+    name: str
+    email: str
+    phone: str
+
+class ClientUpdateSchema(BaseModel):
+    name: str | None = None
+    email: str | None = None
+    phone: str | None = None
+
 
 class ServiceSchema(BaseModel):
     name: str
@@ -23,6 +54,79 @@ class ServiceSchema(BaseModel):
 
 router = APIRouter(prefix="/api")
 templates = Jinja2Templates(directory="app/templates")
+
+
+#ENDPOINTS para usuarios admin
+@router.post("/admin/crear-usuario")
+async def crear_usuario(
+    user_in: UserRegisterSchema,
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        nuevo_usuario = User(**user_in.model_dump())
+        db.add(nuevo_usuario)
+        await db.commit()
+        await db.refresh(nuevo_usuario)
+        return {"mensaje": "Usuario creado correctamente"}
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error al crear usuario: {str(e)}")
+
+@router.get("/admin/listado/usuarios")
+async def obtener_listado_usuarios(
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        stmt = select(User).order_by(User.id)
+        result = await db.execute(stmt)
+        usuarios = result.scalars().all()
+        return usuarios
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error al obtener usuarios: {str(e)}")
+
+@router.delete("/admin/eliminar-usuario/{id}")
+async def eliminar_usuario(
+    id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        stmt = select(User).where(User.id == id)
+        result = await db.execute(stmt)
+        usuario = result.scalar_one_or_none()
+        if not usuario:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        await db.delete(usuario)
+        await db.commit()
+        return {"mensaje": "Usuario eliminado correctamente"}
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error al eliminar usuario: {str(e)}")
+
+@router.put("/admin/editar-usuario/{id}")
+async def editar_usuario(
+    id: int,
+    user_in: UserUpdateSchema,
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        stmt = select(User).where(User.id == id)
+        result = await db.execute(stmt)
+        usuario = result.scalar_one_or_none()
+        if not usuario:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        usuario.username = user_in.username
+        usuario.email = user_in.email
+        usuario.password = user_in.password
+        usuario.rol = user_in.rol
+        usuario.permissions = user_in.permissions
+        await db.commit()
+        await db.refresh(usuario)
+        return {"mensaje": "Usuario editado correctamente"}
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error al editar usuario: {str(e)}")
+
+
 
 
 #ENDPOINTS para parte administrativa

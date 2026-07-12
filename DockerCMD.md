@@ -12,3 +12,9 @@ docker exec -it xperience-db-1 psql -U <Usuario> -d <NombreBD>
 
 # Entrar a la terminal de fastapi
 docker exec -it xperience-web-1 bash
+
+# Recargar el servidor
+docker-compose restart web
+
+# Reiniciar servidor y reconstruir imagen
+docker-compose restart web

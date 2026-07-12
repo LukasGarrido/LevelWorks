@@ -17,6 +17,8 @@ from app.routes import views, api
 # Importar modelos para que SQLAlchemy los registre en Base.metadata
 from app import models
 
+from app.auth import AdminAuth
+
 
 
 settings = get_settings()
@@ -38,7 +40,18 @@ app = FastAPI(
 )
 
 # SQLAdmin Configuración
-admin = Admin(app, engine)
+admin = Admin(
+    app, 
+    engine,
+    title="Xperience Panel",
+    authentication_backend=AdminAuth()
+)
+
+class UserAdmin(ModelView, model=models.User):
+    column_list = [models.User.id, models.User.username, models.User.email, models.User.rol, models.User.created_at]
+    column_searchable_list = [models.User.username, models.User.email]
+    form_columns = [models.User.username, models.User.email, models.User.hashed_password, models.User.rol, models.User.permissions]
+    icon = "fa-solid fa-user"
 
 class ServiceAdmin(ModelView, model=models.Service):
     column_list = [models.Service.id, models.Service.name, models.Service.price, models.Service.duration_minutes, models.Service.photo]
@@ -69,9 +82,21 @@ class ClientAdmin(ModelView, model=models.Client):
     icon = "fa-solid fa-users"
 
 class ReservationAdmin(ModelView, model=models.Reservation):
-    column_list = [models.Reservation.id, models.Reservation.client_id, models.Reservation.service_id, models.Reservation.scheduled_at, models.Reservation.status]
+    column_list = [models.Reservation.id, models.Reservation.client, models.Reservation.service, models.Reservation.scheduled_at, models.Reservation.status]
+    form_columns = [models.Reservation.client, models.Reservation.service, models.Reservation.scheduled_at, models.Reservation.status, models.Reservation.notes]
+    form_ajax_refs = {
+        "client": {
+            "fields": ("name", "email"),
+            "order_by": "id",
+        },
+        "service": {
+            "fields": ("name",),
+            "order_by": "id",
+        }
+    }
     icon = "fa-solid fa-calendar-check"
 
+admin.add_view(UserAdmin)
 admin.add_view(ServiceAdmin)
 admin.add_view(ClientAdmin)
 admin.add_view(ReservationAdmin)

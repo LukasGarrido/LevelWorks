@@ -10,3 +10,4 @@ python-dotenv>=1.0.1
 pydantic-settings>=2.2.0
 aiosqlite>=0.20.0
 sqladmin>=0.17.0
+itsdangerous>=2.1.2
