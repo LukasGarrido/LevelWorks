@@ -5,6 +5,7 @@ from sqlalchemy import select
 from app.database import async_session
 from app.models import User, Rol
 from app.config import get_settings
+from app.security import verify_password, hash_password
 
 settings = get_settings()
 
@@ -32,7 +33,7 @@ class AdminAuth(AuthenticationBackend):
                 return False
 
             # Validar contraseña (AQUÍ DEBERÍAS USAR UN HASH EN PRODUCCIÓN)
-            if user.hashed_password != password:
+            if not verify_password(password, user.hashed_password):
                 return False
 
             # Guardar el token en la sesión
