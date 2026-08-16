@@ -15,6 +15,7 @@ Sistema moderno de gestión y reserva de citas optimizado para negocios de autol
 | **SQLAlchemy** | 2.0+ | ORM asíncrono para la gestión y modelado relacional de datos. |
 | **PostgreSQL** | 16 | Base de datos relacional principal para entornos de producción. |
 | **SQLAdmin** | 0.17+ | Panel de administración integrado para gestión CRUD de modelos y archivos. |
+| **fastapi-storages** | 0.3+ | Almacenamiento y gestión nativa de archivos para SQLAlchemy y SQLAdmin. |
 | **Passlib & Bcrypt** | 1.7+ / 4.0+ | Hashing seguro de contraseñas y autenticación de administradores. |
 | **Docker & Docker Compose** | v2+ | Contenedorización y orquestación del backend y la base de datos. |
 
@@ -42,6 +43,7 @@ xperience/
     ├── main.py            # Entrada principal FastAPI, vista Admin (SQLAdmin) y estáticos
     ├── models.py          # Modelos relacionales (User, Client, Service, Reservation) y Enums
     ├── security.py        # Utilidades de seguridad (hashing y verificación Bcrypt)
+    ├── storage.py         # Almacenamiento y gestión de archivos con FileSystemStorage
     ├── img/               # Almacenamiento de imágenes de servicios subidas por el admin
     ├── routes/
     │   ├── __init__.py

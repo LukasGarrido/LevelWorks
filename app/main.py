@@ -9,7 +9,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from sqladmin import Admin, ModelView
-from wtforms import FileField
 
 from app.config import get_settings
 from app.database import init_db, engine
@@ -57,24 +56,7 @@ class ServiceAdmin(ModelView, model=models.Service):
     column_list = [models.Service.id, models.Service.name, models.Service.price, models.Service.duration_minutes, models.Service.photo]
     column_searchable_list = [models.Service.name]
     form_columns = [models.Service.name, models.Service.description, models.Service.price, models.Service.duration_minutes, models.Service.photo]
-    form_overrides = dict(photo=FileField)
     icon = "fa-solid fa-car"
-
-    async def on_model_change(self, data, model, is_created, request):
-        photo = data.get("photo")
-        if photo and getattr(photo, "filename", None):
-            filename = photo.filename
-            content = await photo.read()
-            os.makedirs("app/img", exist_ok=True)
-            file_path = os.path.join("app", "img", filename)
-            with open(file_path, "wb") as f:
-                f.write(content)
-            data["photo"] = f"/img/{filename}"
-        else:
-            if not is_created:
-                data.pop("photo", None)
-            else:
-                data["photo"] = None
 
 class ClientAdmin(ModelView, model=models.Client):
     column_list = [models.Client.id, models.Client.name, models.Client.email, models.Client.phone]

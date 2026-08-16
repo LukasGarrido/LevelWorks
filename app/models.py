@@ -19,7 +19,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
+from fastapi_storages.integrations.sqlalchemy import FileType
 from app.database import Base
+from app.storage import storage
 
 
 class Permission(str, enum.Enum):
@@ -89,7 +91,7 @@ class Service(Base):
     name = Column(String(150), nullable=False)
     description = Column(Text, nullable=True)
     price = Column(Float, nullable=False)
-    photo = Column(String(255), nullable=True)
+    photo = Column(FileType(storage=storage), nullable=True)
     duration_minutes = Column(Integer, nullable=False, default=30)
     created_at = Column(DateTime, default=datetime.utcnow)
 

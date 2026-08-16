@@ -36,3 +36,7 @@ Thumbs.db
 
 # Docker (volumes locales)
 pgdata/
+
+# Media & Storage (Imágenes de servicios subidas)
+app/img/*
+!app/img/.gitkeep
