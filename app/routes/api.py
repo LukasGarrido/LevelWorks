@@ -10,6 +10,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+from app.config import settings_proxy
 from app.database import get_db
 from app.models import User, Permission, Rol, Client, Service, Reservation, ReservationStatus
 
@@ -54,6 +55,7 @@ class ServiceSchema(BaseModel):
 
 router = APIRouter(prefix="/api")
 templates = Jinja2Templates(directory="app/templates")
+templates.env.globals["settings"] = settings_proxy
 
 
 #ENDPOINTS para usuarios admin

@@ -26,7 +26,7 @@ Sistema moderno de gestión y reserva de citas optimizado para negocios de autol
 
 ```text
 xperience/
-├── .env.example           # Plantilla con variables de entorno de ejemplo (DB credentials, etc.)
+├── .env.example           # Plantilla con variables de entorno de ejemplo (DB credentials, contacto, etc.)
 ├── .gitignore             # Exclusiones de Git para Python, bytecode, DBs y Docker
 ├── Dockerfile             # Definición de la imagen Docker (Python 3.12-slim + uvicorn)
 ├── docker-compose.yml     # Orquestación del servicio PostgreSQL 16 + App FastAPI
@@ -47,13 +47,19 @@ xperience/
     ├── img/               # Almacenamiento de imágenes de servicios subidas por el admin
     ├── routes/
     │   ├── __init__.py
-    │   ├── api.py         # Endpoints HTMX y API (disponibilidad de horas, reservas, CRUD admin)
-    │   └── views.py       # Rutas HTML (página principal de reservas)
+    │   ├── api.py         # Endpoints de API REST (CRUD admin, gestión de usuarios)
+    │   └── views.py       # Rutas HTML y fragmentos HTMX del wizard de reservas
     └── templates/
-        ├── base.html      # Plantilla base HTML (Tailwind CDN, HTMX y estructura global)
-        ├── index.html     # Interfaz principal de reserva de citas (Integración HTMX)
-        └── components/
-            └── horas_disponibles.html # Fragmento HTMX devuelto para mostrar horarios libres
+        ├── base.html      # Plantilla base (Navbar, Modal de contacto, Footer, Tailwind, HTMX)
+        ├── home.html      # Landing page principal (Hero, Beneficios, Grilla de Servicios)
+        ├── servicios.html # Catálogo completo de servicios de detailing
+        ├── reservas.html  # Contenedor del wizard multi-paso de reserva
+        └── reservas/      # Fragmentos dinámicos HTMX del wizard
+            ├── step1_services.html            # Paso 1: Selección de Servicio
+            ├── step2_datetime.html            # Paso 2: Selección de Fecha y Calendario
+            ├── horas_disponibles_reserva.html # Carga dinámica de horarios disponibles
+            ├── step3_details.html             # Paso 3: Formulario de datos del cliente
+            └── step4_receipt.html             # Paso 4: Recibo / Confirmación de éxito
 ```
 
 ---
