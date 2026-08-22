@@ -14,7 +14,7 @@
                 <!-- Image -->
                 <div class="aspect-[16/9] w-full bg-neutral-50 relative overflow-hidden flex items-center justify-center">
                     {% if servicio.photo %}
-                        <img src="{% if servicio.photo.startswith('/') %}{{ servicio.photo }}{% else %}/img/{{ servicio.photo }}{% endif %}" 
+                        <img src="/img/{{ servicio.photo.name }}" 
                              alt="{{ servicio.name }}" 
                              class="w-full h-full object-cover">
                     {% else %}
