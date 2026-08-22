@@ -1,10 +1,10 @@
-# Xperience
+# Level Works
 
 Sistema moderno de gestión y reserva de citas optimizado para negocios de autolavado. Desarrollado bajo una arquitectura de **monolito moderno** y asíncrono, eliminando la sobrecarga de frameworks frontend pesados para garantizar un rendimiento ultrarrápido, menor complejidad de mantenimiento y un despliegue simplificado.
 
 ---
 
-## Factibilidad Técnica
+## Stack Tecnológico 
 
 | Tecnología | Versión | Breve Descripción |
 | :--- | :--- | :--- |
@@ -25,7 +25,7 @@ Sistema moderno de gestión y reserva de citas optimizado para negocios de autol
 ## Estructura del Proyecto
 
 ```text
-xperience/
+level-works/
 ├── .env.example           # Plantilla con variables de entorno de ejemplo (DB credentials, contacto, etc.)
 ├── .gitignore             # Exclusiones de Git para Python, bytecode, DBs y Docker
 ├── Dockerfile             # Definición de la imagen Docker (Python 3.12-slim + uvicorn)
@@ -78,7 +78,7 @@ xperience/
 1. **Clonar el repositorio:**
    ```bash
    git clone <URL_DEL_REPOSITORIO>
-   cd xperience
+   cd level-works
    ```
 
 2. **Configurar variables de entorno:**
@@ -88,7 +88,7 @@ xperience/
    ```
    Contenido por defecto de `.env.example`:
    ```env
-   DB_NAME=xperience_db
+   DB_NAME=levelworks_db
    DB_USER=postgres
    DB_PASSWORD=123
    ```
@@ -102,7 +102,7 @@ xperience/
 4. **Crear el usuario Administrador:**
    Ejecuta el script interactivo dentro del contenedor de la app:
    ```bash
-   docker exec -it xperience-web-1 python create_admin.py
+   docker exec -it level-works-web-1 python create_admin.py
    ```
    Sigue las instrucciones en pantalla para ingresar Email, Username y Contraseña.
 
@@ -131,7 +131,7 @@ xperience/
    ```
 
 3. **Configurar el entorno (`.env`):**
-   Copia el archivo `.env.example` a `.env`. Si no especificas variables de PostgreSQL en el `.env`, la aplicación utilizará SQLite por defecto (`sqlite+aiosqlite:///./xperience.db`).
+   Copia el archivo `.env.example` a `.env`. Si no especificas variables de PostgreSQL en el `.env`, la aplicación utilizará SQLite por defecto (`sqlite+aiosqlite:///./level_works.db`).
 
 4. **Crear usuario Administrador:**
    ```bash
@@ -165,11 +165,3 @@ xperience/
    * **Clientes:** Visualiza el listado de clientes registrados automáticamente al reservar.
    * **Reservas:** Revisa todas las citas agendadas, filtra por estado y actualiza su estatus (*pendiente*, *confirmada*, *en_progreso*, *completada*, *cancelada*).
    * **Usuarios:** Gestiona usuarios internos del sistema, asignando roles y permisos específicos.
-
----
-
-## Comandos Útiles
-
-Consulta los archivos complementarios para comandos específicos:
-* [DockerCMD.md](file:///c:/Users/lukas/Desktop/Personal/xperience/DockerCMD.md) - Comandos rápidos para manejar contenedores Docker.
-* [db.md](file:///c:/Users/lukas/Desktop/Personal/xperience/db.md) - Comandos útiles para consultas en la CLI de PostgreSQL (`psql`).

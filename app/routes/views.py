@@ -80,7 +80,7 @@ async def home(request: Request, db: AsyncSession = Depends(get_db)):
     return templates.TemplateResponse(
         request=request,
         name="home.html",
-        context={"request": request, "title": "Xperience – Detailing Profesional", "servicios": servicios},
+        context={"request": request, "title": "Level Works – Detailing", "servicios": servicios},
     )
 
 
@@ -93,7 +93,7 @@ async def servicios(request: Request, db: AsyncSession = Depends(get_db)):
     return templates.TemplateResponse(
         request=request,
         name="servicios.html",
-        context={"request": request, "title": "Nuestros Servicios — Xperience", "servicios": servicios},
+        context={"request": request, "title": "Nuestros Servicios — Level Works", "servicios": servicios},
     )
 
 
@@ -116,7 +116,7 @@ async def reservas(
         name="reservas.html",
         context={
             "request": request,
-            "title": "Reservar Cita — Xperience",
+            "title": "Reservar Cita — Level Works",
             "servicios": servicios,
             "selected_servicio_id": servicio_id,
             "initial_step": initial_step

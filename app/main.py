@@ -42,7 +42,7 @@ app = FastAPI(
 admin = Admin(
     app, 
     engine,
-    title="Xperience Panel",
+    title="Level Works Panel",
     authentication_backend=AdminAuth()
 )
 
