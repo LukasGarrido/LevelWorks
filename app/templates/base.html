@@ -1,19 +1,20 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-[#0E1418]">
+<html lang="es" class="h-full bg-white">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Xperience – Detailing de ultra alta gama.">
-    <meta name="theme-color" content="#0E1418">
+    <meta name="theme-color" content="#ffffff">
 
     <title>{% block title %}Xperience{% endblock %}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -23,13 +24,26 @@
                         sans: ['Inter', 'sans-serif'],
                     },
                     colors: {
-                        crest: '#B7222A',
+                        brand: {
+                            50: '#fdf4f0',
+                            100: '#fbe8de',
+                            200: '#f6d1bf',
+                            300: '#f0ae92',
+                            400: '#e6825c',
+                            500: '#de5e35',
+                            600: '#cf4620',
+                            700: '#ac351a',
+                            800: '#892c1a',
+                            900: '#6f2619',
+                            DEFAULT: '#f15a24' // El naranja del diseño
+                        }
                     }
                 }
             }
         }
     </script>
 
+    <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 
     <style>
@@ -42,135 +56,90 @@
             scrollbar-width: none;
         }
 
-        .link-arrow {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
+        /* Estilo general del scrollbar de la página */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f3f4f6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
         }
 
-        .link-arrow::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            bottom: -2px;
-            height: 1px;
-            width: 0%;
-            background: currentColor;
-            transition: width 0.35s cubic-bezier(.4, 0, .2, 1);
+        /* Transiciones suaves */
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
         }
 
-        .link-arrow:hover::after {
-            width: 100%;
-        }
-
-        .link-arrow svg {
-            transition: transform 0.35s cubic-bezier(.4, 0, .2, 1);
-        }
-
-        .link-arrow:hover svg {
-            transform: translateX(4px);
-        }
-
-        #site-header.is-scrolled {
-            background-color: rgba(14, 20, 24, 0.85);
-            backdrop-filter: blur(14px);
-            border-bottom-color: rgba(255, 255, 255, 0.08);
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 
     {% block head %}{% endblock %}
 </head>
 
-<body
-    class="h-full bg-[#0E1418] text-[#F4F4F2] antialiased font-sans flex flex-col selection:bg-[#B7222A] selection:text-white">
+<body class="h-full bg-white text-neutral-800 antialiased font-sans flex flex-col selection:bg-brand selection:text-white">
 
-    <header id="site-header"
-        class="w-full fixed top-0 left-0 right-0 z-50 border-b border-transparent transition-all duration-500">
-        <div class="mx-auto max-w-7xl px-8 h-20 grid grid-cols-3 items-center">
-
-            <div class="relative justify-self-start" id="menu-wrapper">
-                <button id="menu-toggle" onclick="toggleMenu()" aria-expanded="false" aria-label="Abrir menú"
-                    class="flex items-center gap-3 text-white/70 hover:text-white transition-colors duration-300">
-                    <span class="relative w-5 h-4 flex flex-col justify-between">
-                        <span class="menu-line block h-[1.5px] w-full bg-current transition-all duration-300"></span>
-                        <span class="menu-line block h-[1.5px] w-full bg-current transition-all duration-300"></span>
-                        <span class="menu-line block h-[1.5px] w-full bg-current transition-all duration-300"></span>
-                    </span>
-                    <span class="hidden sm:inline text-[11px] font-medium tracking-[0.2em] uppercase">Menú</span>
-                </button>
-
-                <div id="menu-dropdown"
-                    class="hidden absolute top-full left-0 mt-4 w-52 rounded-lg border border-white/10 bg-[#0E1418]/95 backdrop-blur-xl py-2 shadow-2xl shadow-black/50">
-                    <a href="#servicios" onclick="closeMenu()"
-                        class="block px-5 py-3 text-[11px] font-medium tracking-[0.15em] uppercase text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors duration-200">Servicios</a>
-                    <a href="#reserva" onclick="closeMenu()"
-                        class="block px-5 py-3 text-[11px] font-medium tracking-[0.15em] uppercase text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors duration-200">Reserva</a>
-                </div>
-            </div>
-
-            <a href="/" class="flex items-center gap-2.5 group justify-self-center">
-                <span class="w-1.5 h-1.5 rounded-full bg-[#B7222A]"></span>
-                <span class="text-lg font-light tracking-[0.3em] uppercase text-white">Xperience</span>
+    <!-- HEADER (Basado en home.png) -->
+    <header class="w-full bg-white border-b border-neutral-100 sticky top-0 z-50">
+        <div class="mx-auto max-w-7xl px-6 md:px-8 h-20 flex items-center justify-between">
+            
+            <!-- Logo: Xperience. -->
+            <a href="/" class="flex items-center gap-1 group">
+                <span class="text-xl font-bold tracking-tight text-neutral-900">Xperience<span class="text-brand">.</span></span>
             </a>
+
+            <!-- Navigation and Actions -->
+            <div class="flex items-center gap-8">
+                <!-- Navigation links -->
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="/" class="text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors duration-200">Inicio</a>
+                    <a href="/servicios" class="text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors duration-200">Servicios</a>
+                    <a href="/reservas" class="text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors duration-200">Reservar</a>
+                    <a href="/admin" class="text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors duration-200">/admin</a>
+                </nav>
+
+                <!-- Action Button: Agendar cita -->
+                <a href="/reservas" class="bg-brand text-white font-semibold text-xs tracking-wider uppercase px-5 py-3 rounded-full hover:bg-brand-600 transition-all duration-200 shadow-sm shadow-brand/10">
+                    Agendar cita
+                </a>
+            </div>
 
         </div>
     </header>
 
-    <main class="flex-grow flex flex-col justify-center">
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow">
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-[#0E1418] border-t border-white/[0.06] py-10 text-white/40">
-        <div
-            class="mx-auto max-w-7xl px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] tracking-[0.1em] uppercase">
-            <p>&copy; {{ now().year if now is defined else "2026" }} Xperience — Detailing de ultra alta gama.</p>
-            <div class="flex gap-8">
-                <a href="#" class="hover:text-white transition-colors duration-300">Términos</a>
-                <a href="#" class="hover:text-white transition-colors duration-300">Privacidad</a>
-                <a href="#" class="hover:text-white transition-colors duration-300">Contacto</a>
+    <!-- FOOTER (Basado en home.png) -->
+    <footer class="bg-white border-t border-neutral-100 py-8 text-neutral-400 text-xs">
+        <div class="mx-auto max-w-7xl px-6 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p>&copy; 2026 Xperience Car Care</p>
+            <div class="flex items-center gap-2">
+                <!-- Icono de reloj simple -->
+                <svg class="w-4 h-4 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Lun a Sáb - 09:00 - 18:30</span>
             </div>
         </div>
     </footer>
-
-    <script>
-            (function () {
-                const header = document.getElementById('site-header');
-                const onScroll = () => {
-                    if (window.scrollY > 40) header.classList.add('is-scrolled');
-                    else header.classList.remove('is-scrolled');
-                };
-                document.addEventListener('scroll', onScroll, { passive: true });
-                onScroll();
-            })();
-
-        function toggleMenu() {
-            const dropdown = document.getElementById('menu-dropdown');
-            const toggle = document.getElementById('menu-toggle');
-            const isOpen = !dropdown.classList.contains('hidden');
-            if (isOpen) {
-                dropdown.classList.add('hidden');
-                toggle.setAttribute('aria-expanded', 'false');
-            } else {
-                dropdown.classList.remove('hidden');
-                toggle.setAttribute('aria-expanded', 'true');
-            }
-        }
-
-        function closeMenu() {
-            document.getElementById('menu-dropdown').classList.add('hidden');
-            document.getElementById('menu-toggle').setAttribute('aria-expanded', 'false');
-        }
-
-        document.addEventListener('click', (e) => {
-            const wrapper = document.getElementById('menu-wrapper');
-            if (wrapper && !wrapper.contains(e.target)) closeMenu();
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeMenu();
-        });
-    </script>
 
     {% block scripts %}{% endblock %}
 </body>

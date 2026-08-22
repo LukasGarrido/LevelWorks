@@ -1,0 +1,89 @@
+<!-- STEP 1 FRAGMENT (HTMX) -->
+<form hx-get="/reservas/paso2" hx-target="#booking-wizard-container" hx-swap="innerHTML" class="fade-in flex flex-col gap-8">
+    
+    <!-- Grid of Services -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {% for servicio in servicios %}
+        <label class="relative cursor-pointer block select-none">
+            <!-- Hidden radio button -->
+            <input type="radio" name="servicio_id" value="{{ servicio.id }}" class="sr-only peer" required
+                   onchange="document.getElementById('step1-btn').removeAttribute('disabled'); document.getElementById('step1-btn').className = 'bg-brand text-white font-bold text-xs tracking-wider uppercase px-8 py-4 rounded-full hover:bg-brand-600 transition-all duration-200 cursor-pointer';">
+            
+            <!-- Service Card (checked border via peer) -->
+            <div class="flex flex-col rounded-2xl border border-neutral-100 bg-white overflow-hidden shadow-sm hover:shadow-md peer-checked:border-2 peer-checked:border-brand peer-checked:p-[1px] transition-all duration-150 h-full">
+                <!-- Image -->
+                <div class="aspect-[16/9] w-full bg-neutral-50 relative overflow-hidden flex items-center justify-center">
+                    {% if servicio.photo %}
+                        <img src="{% if servicio.photo.startswith('/') %}{{ servicio.photo }}{% else %}/img/{{ servicio.photo }}{% endif %}" 
+                             alt="{{ servicio.name }}" 
+                             class="w-full h-full object-cover">
+                    {% else %}
+                        <div class="w-full h-full bg-neutral-100 flex items-center justify-center text-neutral-300">
+                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Details -->
+                <div class="p-5 flex flex-col justify-between flex-grow gap-4">
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between items-start gap-3">
+                            <h3 class="text-xs sm:text-sm font-bold text-neutral-900 leading-tight">
+                                {{ servicio.name }}
+                            </h3>
+                            <span class="text-[10px] font-bold text-brand uppercase tracking-wider bg-brand-50 px-2 py-0.5 rounded shrink-0">
+                                {{ servicio.duration_minutes }} min
+                            </span>
+                        </div>
+                        {% if servicio.description %}
+                        <p class="text-[11px] text-neutral-400 leading-relaxed line-clamp-2">
+                            {{ servicio.description }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    <div class="text-xs sm:text-sm font-extrabold text-neutral-900 pt-3 border-t border-neutral-50 mt-auto">
+                        ${{ "{:,.0f}".format(servicio.price).replace(",", ".") }}
+                    </div>
+                </div>
+            </div>
+        </label>
+        {% endfor %}
+    </div>
+
+    <!-- Bottom Bar Actions -->
+    <div class="flex justify-between items-center border-t border-neutral-100 pt-6 mt-4">
+        <span class="text-xs text-neutral-400 font-medium">Paso 1 de 4</span>
+        <button type="submit" id="step1-btn" disabled 
+                class="bg-brand/40 text-white font-bold text-xs tracking-wider uppercase px-8 py-4 rounded-full cursor-not-allowed transition-all duration-200">
+            Continuar
+        </button>
+    </div>
+</form>
+
+<!-- PROGRESS BAR UPDATE (OOB SWAP) -->
+<div id="wizard-progress-bar" hx-swap-oob="true" class="w-full">
+    <div class="grid grid-cols-4 gap-4 border-b border-neutral-100 pb-3">
+        <!-- Step 1 (Active) -->
+        <div class="flex flex-col gap-1.5">
+            <span class="text-[10px] sm:text-xs font-bold text-brand">1. Servicio</span>
+            <div class="h-1 rounded-full bg-brand"></div>
+        </div>
+        <!-- Step 2 (Pending) -->
+        <div class="flex flex-col gap-1.5">
+            <span class="text-[10px] sm:text-xs font-semibold text-neutral-400">2. Fecha y hora</span>
+            <div class="h-1 rounded-full bg-neutral-100"></div>
+        </div>
+        <!-- Step 3 (Pending) -->
+        <div class="flex flex-col gap-1.5">
+            <span class="text-[10px] sm:text-xs font-medium text-neutral-400">3. Tus datos</span>
+            <div class="h-1 rounded-full bg-neutral-100"></div>
+        </div>
+        <!-- Step 4 (Pending) -->
+        <div class="flex flex-col gap-1.5">
+            <span class="text-[10px] sm:text-xs font-medium text-neutral-400">4. Confirmación</span>
+            <div class="h-1 rounded-full bg-neutral-100"></div>
+        </div>
+    </div>
+</div>

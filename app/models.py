@@ -115,6 +115,7 @@ class Reservation(Base):
         default=ReservationStatus.PENDIENTE,
         nullable=False,
     )
+    vehicle = Column(String(150), nullable=True)
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
