@@ -77,7 +77,12 @@ class Client(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relaciones
-    reservations = relationship("Reservation", back_populates="client")
+    reservations = relationship(
+        "Reservation",
+        back_populates="client",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
     def __repr__(self):
         return f"<Client {self.name}>"
@@ -96,7 +101,12 @@ class Service(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relaciones
-    reservations = relationship("Reservation", back_populates="service")
+    reservations = relationship(
+        "Reservation",
+        back_populates="service",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
     def __repr__(self):
         return f"<Service {self.name}>"
