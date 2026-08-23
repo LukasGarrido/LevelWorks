@@ -1,6 +1,6 @@
 # Level Works
 
-Sistema moderno de gestión y reserva de citas optimizado para negocios de autolavado. Desarrollado bajo una arquitectura de **monolito moderno** y asíncrono, eliminando la sobrecarga de frameworks frontend pesados para garantizar un rendimiento ultrarrápido, menor complejidad de mantenimiento y un despliegue simplificado.
+Sistema de gestión y reserva, optimizado para negocios de autolavado. Desarrollado bajo una arquitectura de **monolito moderno** y asíncrono, eliminando la sobrecarga de frameworks frontend pesados para garantizar un rendimiento, menor complejidad de mantenimiento y un despliegue simplificado.
 
 ---
 
@@ -109,39 +109,6 @@ level-works/
 5. **Acceder a la aplicación:**
    * **Sitio Web / Reservas:** [http://localhost:8000](http://localhost:8000)
    * **Panel Administrativo:** [http://localhost:8000/admin](http://localhost:8000/admin)
-
----
-
-### Opción 2: Ejecución Local Nativa (Sin Docker)
-
-1. **Crear y activar un entorno virtual:**
-   ```bash
-   # Linux / macOS
-   python3 -m venv venv
-   source venv/bin/activate
-
-   # Windows
-   python -m venv venv
-   venv\Scripts\activate
-   ```
-
-2. **Instalar dependencias:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Configurar el entorno (`.env`):**
-   Copia el archivo `.env.example` a `.env`. Si no especificas variables de PostgreSQL en el `.env`, la aplicación utilizará SQLite por defecto (`sqlite+aiosqlite:///./level_works.db`).
-
-4. **Crear usuario Administrador:**
-   ```bash
-   python create_admin.py
-   ```
-
-5. **Iniciar el servidor Uvicorn:**
-   ```bash
-   uvicorn app.main:app --reload --port 8000
-   ```
 
 ---
 
