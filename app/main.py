@@ -11,11 +11,11 @@ from fastapi.staticfiles import StaticFiles
 from sqladmin import Admin, ModelView
 
 from app.config import get_settings
-from app.database import init_db, engine
+from app.core.db.database import init_db, engine
 from app.routes import views, api
-# Importar modelos para que SQLAlchemy los registre en Base.metadata
-from app import models
 
+# Importar modelos para que SQLAlchemy los registre en Base.metadata
+from app.models import User, Service, Client, Reservation
 from app.auth import AdminAuth
 
 
@@ -46,26 +46,26 @@ admin = Admin(
     authentication_backend=AdminAuth()
 )
 
-class UserAdmin(ModelView, model=models.User):
-    column_list = [models.User.id, models.User.username, models.User.email, models.User.rol, models.User.created_at]
-    column_searchable_list = [models.User.username, models.User.email]
-    form_columns = [models.User.username, models.User.email, models.User.hashed_password, models.User.rol, models.User.permissions]
+class UserAdmin(ModelView, model=User):
+    column_list = [User.id, User.username, User.email, User.rol, User.created_at]
+    column_searchable_list = [User.username, User.email]
+    form_columns = [User.username, User.email, User.hashed_password, User.rol, User.permissions]
     icon = "fa-solid fa-user"
 
-class ServiceAdmin(ModelView, model=models.Service):
-    column_list = [models.Service.id, models.Service.name, models.Service.price, models.Service.duration_minutes, models.Service.photo]
-    column_searchable_list = [models.Service.name]
-    form_columns = [models.Service.name, models.Service.description, models.Service.price, models.Service.duration_minutes, models.Service.photo]
+class ServiceAdmin(ModelView, model=Service):
+    column_list = [Service.id, Service.name, Service.price, Service.duration_minutes, Service.photo]
+    column_searchable_list = [Service.name]
+    form_columns = [Service.name, Service.description, Service.price, Service.duration_minutes, Service.photo]
     icon = "fa-solid fa-car"
 
-class ClientAdmin(ModelView, model=models.Client):
-    column_list = [models.Client.id, models.Client.name, models.Client.email, models.Client.phone]
-    column_searchable_list = [models.Client.name, models.Client.email]
+class ClientAdmin(ModelView, model=Client):
+    column_list = [Client.id, Client.name, Client.email, Client.phone]
+    column_searchable_list = [Client.name, Client.email]
     icon = "fa-solid fa-users"
 
-class ReservationAdmin(ModelView, model=models.Reservation):
-    column_list = [models.Reservation.id, models.Reservation.client, models.Reservation.service, models.Reservation.scheduled_at, models.Reservation.status]
-    form_columns = [models.Reservation.client, models.Reservation.service, models.Reservation.scheduled_at, models.Reservation.status, models.Reservation.notes]
+class ReservationAdmin(ModelView, model=Reservation):
+    column_list = [Reservation.id, Reservation.client, Reservation.service, Reservation.scheduled_at, Reservation.status]
+    form_columns = [Reservation.client, Reservation.service, Reservation.scheduled_at, Reservation.status, Reservation.notes]
     form_ajax_refs = {
         "client": {
             "fields": ("name", "email"),

@@ -12,8 +12,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.config import settings_proxy
-from app.database import get_db
-from app.models import Service, Reservation, Client, ReservationStatus
+from app.core.db.database import get_db
+
+from app.models.client import Client
+from app.models.reservation import Reservation, ReservationStatus
+from app.models.service import Service
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -286,7 +289,7 @@ async def confirmar_reserva(
     email: str = Form(...),
     telefono: str = Form(...),
     vehiculo: str = Form(...),
-    notes: str = Form(None),  # Map directly to SQLAlchemy notes field
+    notes: str | None = Form(None),
     db: AsyncSession = Depends(get_db)
 ):
     """Paso 4: Crea la reserva y retorna el fragmento de recibo final de éxito (HTMX)."""

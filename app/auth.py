@@ -2,10 +2,10 @@ from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 from sqlalchemy import select
 
-from app.database import async_session
-from app.models import User, Rol
+from app.core.db.database import async_session
+from app.models.user import User, Rol, Permission
 from app.config import get_settings
-from app.security import verify_password, hash_password
+from app.core.security import verify_password, hash_password
 
 settings = get_settings()
 

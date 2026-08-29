@@ -16,6 +16,7 @@ Sistema de gestión y reserva, optimizado para negocios de autolavado. Desarroll
 | **PostgreSQL** | 16 | Base de datos relacional principal para entornos de producción. |
 | **SQLAdmin** | 0.17+ | Panel de administración integrado para gestión CRUD de modelos y archivos. |
 | **fastapi-storages** | 0.3+ | Almacenamiento y gestión nativa de archivos para SQLAlchemy y SQLAdmin. |
+| **Pillow** | 10.0+ | Procesamiento de imágenes (requerido por fastapi-storages ImageType). |
 | **Passlib & Bcrypt** | 1.7+ / 4.0+ | Hashing seguro de contraseñas y autenticación de administradores. |
 | **Docker & Docker Compose** | v2+ | Contenedorización y orquestación del backend y la base de datos. |
 
@@ -26,40 +27,71 @@ Sistema de gestión y reserva, optimizado para negocios de autolavado. Desarroll
 
 ```text
 level-works/
-├── .env.example           # Plantilla con variables de entorno de ejemplo (DB credentials, contacto, etc.)
-├── .gitignore             # Exclusiones de Git para Python, bytecode, DBs y Docker
-├── Dockerfile             # Definición de la imagen Docker (Python 3.12-slim + uvicorn)
-├── docker-compose.yml     # Orquestación del servicio PostgreSQL 16 + App FastAPI
-├── requirements.txt       # Lista de dependencias de Python
-├── create_admin.py        # Script de consola interactivo para crear usuarios administradores
-├── DockerCMD.md            # Guía rápida de comandos Docker útiles para el proyecto
-├── db.md                  # Referencia de comandos interactivos de PostgreSQL (psql)
-├── README.md              # Documentación principal del proyecto
+├── .env
+├── .env.example
+├── .gitignore
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── create_admin.py
+├── DockerCMD.md
+├── db.md
+├── README.md
+│
 └── app/
     ├── __init__.py
-    ├── auth.py            # Backend de autenticación de SQLAdmin (AdminAuth)
-    ├── config.py          # Gestión centralizada de configuración (pydantic-settings)
-    ├── database.py        # Motor asíncrono SQLAlchemy, sesión y creador de tablas (init_db)
-    ├── main.py            # Entrada principal FastAPI, vista Admin (SQLAdmin) y estáticos
-    ├── models.py          # Modelos relacionales (User, Client, Service, Reservation) y Enums
-    ├── security.py        # Utilidades de seguridad (hashing y verificación Bcrypt)
-    ├── storage.py         # Almacenamiento y gestión de archivos con FileSystemStorage
-    ├── img/               # Almacenamiento de imágenes de servicios subidas por el admin
+    ├── main.py                    # FastAPI(), lifespan, SQLAdmin, mount estáticos, routers
+    ├── auth.py                    # AdminAuth (backend de login de SQLAdmin)
+    ├── config.py                  # pydantic-settings, settings_proxy
+    │
+    ├── core/                      # Infraestructura transversal (no sabe nada del negocio)
+    │   ├── __init__.py
+    │   ├── security.py            # hash_password, verify_password (bcrypt/passlib)
+    │   ├── storage.py             # FileSystemStorage, FileType/ImageType (fastapi-storages)
+    │   └── db/
+    │       ├── __init__.py
+    │       └── database.py        # engine async, sessionmaker, get_db, init_db, Base
+    │
+    ├── models/                    # Tablas SQLAlchemy (antes era un solo models.py)
+    │   ├── __init__.py            # exporta: User, Rol, Permission, Client, Service, Reservation, ReservationStatus
+    │   ├── user.py                # User, Rol, Permission
+    │   ├── client.py              # Client
+    │   ├── service.py             # Service (usa FileType de core/storage)
+    │   └── reservation.py         # Reservation, ReservationStatus
+    │
+    ├── schemas/                   # Contratos Pydantic de la API (hoy sueltos arriba de api.py)
+    │   ├── __init__.py
+    │   ├── user.py                # UserRegisterSchema, UserLoginSchema, UserUpdateSchema
+    │   ├── client.py               # ClientSchema, ClientUpdateSchema
+    │   └── service.py              # ServiceSchema
+    │
+    ├── services/                  # Lógica de negocio reutilizable (aislada de HTTP)
+    │   ├── __init__.py
+    │   ├── reservation_service.py # crear_reserva(), cancelar_reserva()
+    │   ├── catalog_service.py     # listar_servicios(), CRUD
+    │   └── user_service.py        # crear_usuario(), editar_usuario()
+    │
     ├── routes/
     │   ├── __init__.py
-    │   ├── api.py         # Endpoints de API REST (CRUD admin, gestión de usuarios)
-    │   └── views.py       # Rutas HTML y fragmentos HTMX del wizard de reservas
+    │   ├── views.py               # HTML/HTMX para el cliente final
+    │   └── api.py                 # JSON para endpoints y panel admin
+    │
+    ├── img/                       # Fotos de servicios subidas vía SQLAdmin
+    │   └── .gitkeep
+    │
     └── templates/
-        ├── base.html      # Plantilla base (Navbar, Modal de contacto, Footer, Tailwind, HTMX)
-        ├── home.html      # Landing page principal (Hero, Beneficios, Grilla de Servicios)
-        ├── servicios.html # Catálogo completo de servicios de detailing
-        ├── reservas.html  # Contenedor del wizard multi-paso de reserva
-        └── reservas/      # Fragmentos dinámicos HTMX del wizard
-            ├── step1_services.html            # Paso 1: Selección de Servicio
-            ├── step2_datetime.html            # Paso 2: Selección de Fecha y Calendario
-            ├── horas_disponibles_reserva.html # Carga dinámica de horarios disponibles
-            ├── step3_details.html             # Paso 3: Formulario de datos del cliente
-            └── step4_receipt.html             # Paso 4: Recibo / Confirmación de éxito
+        ├── base.html
+        ├── home.html
+        ├── servicios.html
+        ├── reservas.html
+        ├── components/
+        │   └── horas_disponibles.html
+        └── reservas/
+            ├── step1_services.html
+            ├── step2_datetime.html
+            ├── horas_disponibles_reserva.html
+            ├── step3_details.html
+            └── step4_receipt.html
 ```
 
 ---
