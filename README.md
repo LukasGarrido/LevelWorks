@@ -1,25 +1,38 @@
 # Level Works
 
-Sistema de gestión y reserva, optimizado para negocios de autolavado. Desarrollado bajo una arquitectura de **monolito moderno** y asíncrono, eliminando la sobrecarga de frameworks frontend pesados para garantizar un rendimiento, menor complejidad de mantenimiento y un despliegue simplificado.
+Sistema de gestión y reserva, optimizado para negocios de autolavado. Desarrollado bajo una **arquitectura desacoplada**: un backend API-first construido con FastAPI y un frontend independiente construido con Astro, comunicados vía REST/JSON.
 
 ---
 
-## Stack Tecnológico 
+## Stack Tecnológico
+
+### Backend (API)
 
 | Tecnología | Versión | Breve Descripción |
 | :--- | :--- | :--- |
-| **FastAPI** | 0.110+ (Python 3.12) | Framework backend asíncrono de alto rendimiento para API y enrutamiento. |
-| **HTMX** | 1.9+ | Frontend reactivo que realiza peticiones AJAX y actualiza HTML sin build step. |
-| **Tailwind CSS** | 3.x (CDN) | Framework CSS utility-first para estilizado responsivo sin compilación local. |
-| **Jinja2** | 3.1+ | Motor de plantillas para renderizado HTML en servidor (SSR). |
+| **FastAPI** | 0.110+ (Python 3.12) | Framework backend asíncrono de alto rendimiento, expuesto como API JSON pura bajo `/api/v1`. |
 | **SQLAlchemy** | 2.0+ | ORM asíncrono para la gestión y modelado relacional de datos. |
 | **PostgreSQL** | 16 | Base de datos relacional principal para entornos de producción. |
-| **SQLAdmin** | 0.17+ | Panel de administración integrado para gestión CRUD de modelos y archivos. |
+| **Pydantic** | 2.x | Contratos de entrada/salida tipados (schemas) para cada endpoint. |
+| **python-jose / PyJWT** | — | Emisión y validación de tokens JWT para autenticación de la API. |
+| **SQLAdmin** | 0.17+ | Panel de administración integrado (SSR interno, no forma parte del frontend público). |
 | **fastapi-storages** | 0.3+ | Almacenamiento y gestión nativa de archivos para SQLAlchemy y SQLAdmin. |
 | **Pillow** | 10.0+ | Procesamiento de imágenes (requerido por fastapi-storages ImageType). |
-| **Passlib & Bcrypt** | 1.7+ / 4.0+ | Hashing seguro de contraseñas y autenticación de administradores. |
-| **Docker & Docker Compose** | v2+ | Contenedorización y orquestación del backend y la base de datos. |
+| **Passlib & Bcrypt** | 1.7+ / 4.0+ | Hashing seguro de contraseñas. |
 
+### Frontend
+
+| Tecnología | Versión | Breve Descripción |
+| :--- | :--- | :--- |
+| **Astro** | 4.x | Framework frontend, renderizado estático/SSR con islas de interactividad. |
+| **React / TS** | — | Componentes interactivos (islands) para el flujo de reserva: selección de servicio, fecha, horario. |
+| **Tailwind CSS** | 3.x | Framework CSS utility-first para estilizado responsivo. |
+
+### Infraestructura
+
+| Tecnología | Versión | Breve Descripción |
+| :--- | :--- | :--- |
+| **Docker & Docker Compose** | v2+ | Contenedorización y orquestación de backend, frontend y base de datos como servicios independientes. |
 
 ---
 
@@ -30,69 +43,104 @@ level-works/
 ├── .env
 ├── .env.example
 ├── .gitignore
-├── Dockerfile
 ├── docker-compose.yml
-├── requirements.txt
-├── create_admin.py
-├── DockerCMD.md
-├── db.md
 ├── README.md
+├── db.md
 │
-└── app/
-    ├── __init__.py
-    ├── main.py                    # FastAPI(), lifespan, SQLAdmin, mount estáticos, routers
-    ├── auth.py                    # AdminAuth (backend de login de SQLAdmin)
-    ├── config.py                  # pydantic-settings, settings_proxy
+├── backend/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── create_admin.py
+│   ├── DockerCMD.md
+│   │
+│   └── app/
+│       ├── __init__.py
+│       ├── main.py                     # FastAPI(), lifespan, CORS, SQLAdmin, incluye api/v1
+│       ├── auth.py                     # AdminAuth (backend de login de SQLAdmin)
+│       ├── config.py                   # pydantic-settings, settings_proxy, CORS_ORIGINS
+│       │
+│       ├── core/                       # Infraestructura transversal (no sabe nada del negocio)
+│       │   ├── __init__.py
+│       │   ├── security.py             # hash_password, verify_password
+│       │   ├── jwt.py                  # create_access_token, decode_token
+│       │   ├── storage.py              # FileSystemStorage, FileType/ImageType
+│       │   └── db/
+│       │       ├── __init__.py
+│       │       └── database.py         # engine async, sessionmaker, get_db, init_db, Base
+│       │
+│       ├── models/                     # Tablas SQLAlchemy
+│       │   ├── __init__.py             # exporta: User, Rol, Permission, Client, Service, Reservation, ReservationStatus
+│       │   ├── user.py
+│       │   ├── client.py
+│       │   ├── service.py
+│       │   └── reservation.py
+│       │
+│       ├── schemas/                    # Contratos Pydantic de la API
+│       │   ├── __init__.py
+│       │   ├── auth.py                 # TokenSchema, LoginSchema
+│       │   ├── user.py                 # UserRegisterSchema, UserLoginSchema, UserUpdateSchema, UserResponseSchema
+│       │   ├── client.py                # ClientSchema, ClientUpdateSchema
+│       │   ├── service.py               # ServiceSchema, ServiceResponseSchema
+│       │   └── reservation.py           # ReservationCreateSchema, ReservationResponseSchema, AvailableSlotsSchema
+│       │
+│       ├── services/                   # Lógica de negocio reutilizable (aislada de HTTP)
+│       │   ├── __init__.py
+│       │   ├── auth_service.py         # login(), issue_token()
+│       │   ├── reservation_service.py  # crear_reserva(), cancelar_reserva(), horas_disponibles()
+│       │   ├── catalog_service.py      # listar_servicios(), CRUD
+│       │   └── user_service.py         # crear_usuario(), editar_usuario()
+│       │
+│       ├── api/                        # Endpoints HTTP, organizados por dominio
+│       │   ├── __init__.py
+│       │   ├── deps.py                 # get_current_user, require_role, paginación común
+│       │   └── v1/
+│       │       ├── __init__.py         # router principal, prefix="/api/v1"
+│       │       ├── auth.py             # POST /login, POST /refresh
+│       │       ├── users.py            # CRUD usuarios/roles/permisos
+│       │       ├── clients.py          # CRUD clientes
+│       │       ├── services.py         # GET /services, catálogo público
+│       │       └── reservations.py     # POST /reservations, GET /availability, PATCH /:id/status
+│       │
+│       └── img/                        # Fotos de servicios subidas vía SQLAdmin
+│           └── .gitkeep
+│
+└── frontend/
+    ├── Dockerfile
+    ├── astro.config.mjs
+    ├── package.json
+    ├── tsconfig.json
+    ├── tailwind.config.mjs
     │
-    ├── core/                      # Infraestructura transversal (no sabe nada del negocio)
-    │   ├── __init__.py
-    │   ├── security.py            # hash_password, verify_password (bcrypt/passlib)
-    │   ├── storage.py             # FileSystemStorage, FileType/ImageType (fastapi-storages)
-    │   └── db/
-    │       ├── __init__.py
-    │       └── database.py        # engine async, sessionmaker, get_db, init_db, Base
+    ├── public/
+    │   └── favicon.svg
     │
-    ├── models/                    # Tablas SQLAlchemy (antes era un solo models.py)
-    │   ├── __init__.py            # exporta: User, Rol, Permission, Client, Service, Reservation, ReservationStatus
-    │   ├── user.py                # User, Rol, Permission
-    │   ├── client.py              # Client
-    │   ├── service.py             # Service (usa FileType de core/storage)
-    │   └── reservation.py         # Reservation, ReservationStatus
-    │
-    ├── schemas/                   # Contratos Pydantic de la API (hoy sueltos arriba de api.py)
-    │   ├── __init__.py
-    │   ├── user.py                # UserRegisterSchema, UserLoginSchema, UserUpdateSchema
-    │   ├── client.py               # ClientSchema, ClientUpdateSchema
-    │   └── service.py              # ServiceSchema
-    │
-    ├── services/                  # Lógica de negocio reutilizable (aislada de HTTP)
-    │   ├── __init__.py
-    │   ├── reservation_service.py # crear_reserva(), cancelar_reserva()
-    │   ├── catalog_service.py     # listar_servicios(), CRUD
-    │   └── user_service.py        # crear_usuario(), editar_usuario()
-    │
-    ├── routes/
-    │   ├── __init__.py
-    │   ├── views.py               # HTML/HTMX para el cliente final
-    │   └── api.py                 # JSON para endpoints y panel admin
-    │
-    ├── img/                       # Fotos de servicios subidas vía SQLAdmin
-    │   └── .gitkeep
-    │
-    └── templates/
-        ├── base.html
-        ├── home.html
-        ├── servicios.html
-        ├── reservas.html
+    └── src/
+        ├── env.d.ts
+        │
+        ├── lib/
+        │   ├── api.ts               # cliente fetch tipado (PUBLIC_API_URL)
+        │   └── types.ts             # tipos compartidos: Service, Reservation, Slot...
+        │
+        ├── layouts/
+        │   └── Base.astro
+        │
         ├── components/
-        │   └── horas_disponibles.html
-        └── reservas/
-            ├── step1_services.html
-            ├── step2_datetime.html
-            ├── horas_disponibles_reserva.html
-            ├── step3_details.html
-            └── step4_receipt.html
+        │   ├── Navbar.astro
+        │   ├── Footer.astro
+        │   ├── ServiceCard.astro
+        │   └── reservation/
+        │       ├── ServiceSelect.tsx      # island
+        │       ├── DatePicker.tsx         # island
+        │       ├── TimeSlots.tsx          # island
+        │       └── ReservationForm.tsx    # island
+        │
+        └── pages/
+            ├── index.astro
+            ├── servicios.astro
+            └── reservas.astro
 ```
+
+> **Qué cambió respecto a la versión anterior:** `app/routes/views.py` y `app/templates/` (Jinja2 + HTMX) fueron eliminados por completo. El renderizado de cliente ahora vive enteramente en `frontend/`, y el backend expone únicamente JSON bajo `/api/v1`. SQLAdmin se mantiene como panel administrativo interno (sigue siendo SSR, pero no forma parte del frontend público).
 
 ---
 
@@ -101,7 +149,7 @@ level-works/
 ### Prerrequisitos
 
 * [Docker](https://www.docker.com/) y [Docker Compose](https://docs.docker.com/compose/) instalados (opción recomendada), **o**
-* [Python 3.10+](https://www.python.org/) y [PostgreSQL](https://www.postgresql.org/) (para ejecución local nativa).
+* [Python 3.10+](https://www.python.org/), [Node.js 20+](https://nodejs.org/) y [PostgreSQL](https://www.postgresql.org/) (para ejecución local nativa).
 
 ---
 
@@ -120,26 +168,36 @@ level-works/
    ```
    Contenido por defecto de `.env.example`:
    ```env
+   # Base de datos
    DB_NAME=levelworks_db
    DB_USER=postgres
    DB_PASSWORD=123
+
+   # Backend
+   JWT_SECRET=changeme
+   CORS_ORIGINS=http://localhost:4321
+
+   # Frontend
+   PUBLIC_API_URL=http://localhost:8000/api/v1
    ```
 
 3. **Levantar los servicios:**
    ```bash
    docker-compose up -d --build
    ```
-   Esto iniciará el contenedor de PostgreSQL 16 y la aplicación FastAPI en Uvicorn.
+   Esto iniciará tres contenedores: `db` (PostgreSQL 16), `api` (FastAPI en Uvicorn) y `frontend` (Astro).
 
 4. **Crear el usuario Administrador:**
-   Ejecuta el script interactivo dentro del contenedor de la app:
+   Ejecuta el script interactivo dentro del contenedor de la API:
    ```bash
-   docker exec -it level-works-web-1 python create_admin.py
+   docker exec -it level-works-api-1 python create_admin.py
    ```
    Sigue las instrucciones en pantalla para ingresar Email, Username y Contraseña.
 
 5. **Acceder a la aplicación:**
-   * **Sitio Web / Reservas:** [http://localhost:8000](http://localhost:8000)
+   * **Sitio Web / Reservas (Astro):** [http://localhost:4321](http://localhost:4321)
+   * **API (FastAPI):** [http://localhost:8000/api/v1](http://localhost:8000/api/v1)
+   * **Documentación interactiva (Swagger):** [http://localhost:8000/docs](http://localhost:8000/docs)
    * **Panel Administrativo:** [http://localhost:8000/admin](http://localhost:8000/admin)
 
 ---
@@ -148,12 +206,12 @@ level-works/
 
 ### 1. Reservar una Cita (Experiencia del Cliente)
 
-1. Ingresa a `http://localhost:8000`.
-2. **Selecciona un Servicio:** Elige entre los servicios de autolavado disponibles (ej: Lavado Simple, Lavado Completo, Polimerizado).
-3. **Selecciona una Fecha:** Al elegir un día en el calendario, HTMX envía automáticamente una solicitud asíncrona para consultar las horas disponibles.
-4. **Elige un Horario:** Selecciona uno de los bloques de hora disponibles devueltos dinámicamente.
+1. Ingresa a `http://localhost:4321`.
+2. **Selecciona un Servicio:** Elige entre los servicios de autolavado disponibles (ej: Lavado Simple, Lavado Completo, Polimerizado), obtenidos desde `GET /api/v1/services`.
+3. **Selecciona una Fecha:** Al elegir un día en el calendario, el componente `TimeSlots` consulta `GET /api/v1/availability` de forma asíncrona.
+4. **Elige un Horario:** Selecciona uno de los bloques de hora disponibles devueltos por la API.
 5. **Completa los Datos:** Ingresa Nombre, Correo Electrónico, Teléfono y Notas adicionales.
-6. **Confirmar Reserva:** Al enviar el formulario, el cliente recibe una confirmación instantánea sin recarga de página.
+6. **Confirmar Reserva:** El formulario envía `POST /api/v1/reservations` y muestra la confirmación sin recarga de página.
 
 ### 2. Gestión Administrativa (Panel Admin)
 
@@ -164,6 +222,20 @@ level-works/
    * **Clientes:** Visualiza el listado de clientes registrados automáticamente al reservar.
    * **Reservas:** Revisa todas las citas agendadas, filtra por estado y actualiza su estatus (*pendiente*, *confirmada*, *en_progreso*, *completada*, *cancelada*).
    * **Usuarios:** Gestiona usuarios internos del sistema, asignando roles y permisos específicos.
+
+---
+
+## API (`/api/v1`)
+
+| Recurso | Endpoints principales |
+| :--- | :--- |
+| **Auth** | `POST /auth/login`, `POST /auth/refresh` |
+| **Services** | `GET /services`, `GET /services/{id}` |
+| **Reservations** | `POST /reservations`, `GET /availability`, `PATCH /reservations/{id}/status` |
+| **Clients** | `GET /clients`, `GET /clients/{id}` |
+| **Users** | `GET /users`, `POST /users`, `PATCH /users/{id}` |
+
+Documentación completa e interactiva disponible en `/docs` (Swagger UI) y `/redoc`.
 
 ---
 
