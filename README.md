@@ -1,6 +1,6 @@
 # Level Works
 
-Sistema de gestión y reserva, optimizado para negocios de autolavado. Desarrollado bajo una **arquitectura desacoplada**: un backend API-first construido con FastAPI y un frontend independiente construido con Astro, comunicados vía REST/JSON.
+Sistema de gestión y reserva, optimizado para negocios de autolavado. Desarrollado bajo una **arquitectura desacoplada**: un backend API-first construido con FastAPI y un frontend independiente construido con Astro (sin frameworks de UI), comunicados vía REST/JSON.
 
 ---
 
@@ -24,15 +24,17 @@ Sistema de gestión y reserva, optimizado para negocios de autolavado. Desarroll
 
 | Tecnología | Versión | Breve Descripción |
 | :--- | :--- | :--- |
-| **Astro** | 4.x | Framework frontend, renderizado estático/SSR con islas de interactividad. |
-| **React / TS** | — | Componentes interactivos (islands) para el flujo de reserva: selección de servicio, fecha, horario. |
-| **Tailwind CSS** | 3.x | Framework CSS utility-first para estilizado responsivo. |
+| **Astro** | 7.x | Framework frontend, build estático puro (`output: 'static'`). Sin framework de UI ni islands — interactividad con `<script>` module nativo. |
+| **Tailwind CSS** | 4.x | Framework CSS utility-first, integrado vía `@tailwindcss/vite` (sin el integration clásico de v3). |
+| **tw-animate-css** | 1.x | Utilidades de animación compatibles con Tailwind v4. |
+| **TypeScript** | strict | Tipado del cliente API (`lib/api.ts`, `lib/types.ts`) y configuración del proyecto. |
 
 ### Infraestructura
 
 | Tecnología | Versión | Breve Descripción |
 | :--- | :--- | :--- |
-| **Docker & Docker Compose** | v2+ | Contenedorización y orquestación de backend, frontend y base de datos como servicios independientes. |
+| **Docker & Docker Compose** | v2+ | Contenedorización y orquestación de backend, frontend y base de datos como servicios independientes. Sin necesidad de instalar Node ni Python en la máquina local. |
+| **nginx** | alpine | Sirve el build estático de Astro en producción. |
 
 ---
 
@@ -48,7 +50,8 @@ level-works/
 ├── db.md
 │
 ├── backend/
-│   ├── Dockerfile
+│   ├── docker/
+│   │   └── Dockerfile
 │   ├── requirements.txt
 │   ├── create_admin.py
 │   ├── DockerCMD.md
@@ -59,67 +62,65 @@ level-works/
 │       ├── auth.py                     # AdminAuth (backend de login de SQLAdmin)
 │       ├── config.py                   # pydantic-settings, settings_proxy, CORS_ORIGINS
 │       │
-│       ├── core/                       # Infraestructura transversal (no sabe nada del negocio)
-│       │   ├── __init__.py
+│       ├── core/
 │       │   ├── security.py             # hash_password, verify_password
 │       │   ├── jwt.py                  # create_access_token, decode_token
 │       │   ├── storage.py              # FileSystemStorage, FileType/ImageType
 │       │   └── db/
-│       │       ├── __init__.py
 │       │       └── database.py         # engine async, sessionmaker, get_db, init_db, Base
 │       │
 │       ├── models/                     # Tablas SQLAlchemy
-│       │   ├── __init__.py             # exporta: User, Rol, Permission, Client, Service, Reservation, ReservationStatus
 │       │   ├── user.py
 │       │   ├── client.py
 │       │   ├── service.py
 │       │   └── reservation.py
 │       │
 │       ├── schemas/                    # Contratos Pydantic de la API
-│       │   ├── __init__.py
-│       │   ├── auth.py                 # TokenSchema, LoginSchema
-│       │   ├── user.py                 # UserRegisterSchema, UserLoginSchema, UserUpdateSchema, UserResponseSchema
-│       │   ├── client.py                # ClientSchema, ClientUpdateSchema
-│       │   ├── service.py               # ServiceSchema, ServiceResponseSchema
-│       │   └── reservation.py           # ReservationCreateSchema, ReservationResponseSchema, AvailableSlotsSchema
+│       │   ├── auth.py
+│       │   ├── user.py
+│       │   ├── client.py
+│       │   ├── service.py
+│       │   └── reservation.py
 │       │
 │       ├── services/                   # Lógica de negocio reutilizable (aislada de HTTP)
-│       │   ├── __init__.py
-│       │   ├── auth_service.py         # login(), issue_token()
-│       │   ├── reservation_service.py  # crear_reserva(), cancelar_reserva(), horas_disponibles()
-│       │   ├── catalog_service.py      # listar_servicios(), CRUD
-│       │   └── user_service.py         # crear_usuario(), editar_usuario()
+│       │   ├── auth_service.py
+│       │   ├── reservation_service.py
+│       │   ├── catalog_service.py
+│       │   └── user_service.py
 │       │
 │       ├── api/                        # Endpoints HTTP, organizados por dominio
-│       │   ├── __init__.py
 │       │   ├── deps.py                 # get_current_user, require_role, paginación común
 │       │   └── v1/
 │       │       ├── __init__.py         # router principal, prefix="/api/v1"
-│       │       ├── auth.py             # POST /login, POST /refresh
-│       │       ├── users.py            # CRUD usuarios/roles/permisos
-│       │       ├── clients.py          # CRUD clientes
-│       │       ├── services.py         # GET /services, catálogo público
-│       │       └── reservations.py     # POST /reservations, GET /availability, PATCH /:id/status
+│       │       ├── auth.py
+│       │       ├── users.py
+│       │       ├── clients.py
+│       │       ├── services.py
+│       │       └── reservations.py
 │       │
 │       └── img/                        # Fotos de servicios subidas vía SQLAdmin
-│           └── .gitkeep
 │
 └── frontend/
-    ├── Dockerfile
+    ├── docker/
+    │   ├── Dockerfile                  # Multi-stage: build estático + nginx (producción)
+    │   └── Dockerfile.dev              # Node + astro dev con hot-reload (desarrollo)
     ├── astro.config.mjs
     ├── package.json
+    ├── package-lock.json
     ├── tsconfig.json
-    ├── tailwind.config.mjs
+    ├── .vscode/
     │
     ├── public/
     │   └── favicon.svg
     │
     └── src/
         ├── env.d.ts
+        ├── styles/
+        │   └── global.css              # entrada de Tailwind v4 (@import "tailwindcss")
         │
         ├── lib/
-        │   ├── api.ts               # cliente fetch tipado (PUBLIC_API_URL)
-        │   └── types.ts             # tipos compartidos: Service, Reservation, Slot...
+        │   ├── api.ts                  # cliente fetch tipado hacia FastAPI
+        │   └── types.ts                # Service, Slot, ReservationPayload, ReservationResponse
         │
         ├── layouts/
         │   └── Base.astro
@@ -128,11 +129,11 @@ level-works/
         │   ├── Navbar.astro
         │   ├── Footer.astro
         │   ├── ServiceCard.astro
-        │   └── reservation/
-        │       ├── ServiceSelect.tsx      # island
-        │       ├── DatePicker.tsx         # island
-        │       ├── TimeSlots.tsx          # island
-        │       └── ReservationForm.tsx    # island
+        │   └── reservation/             # Wizard de reserva, orquestado con CustomEvents
+        │       ├── ServiceSelect.astro
+        │       ├── DatePicker.astro
+        │       ├── TimeSlots.astro
+        │       └── ReservationForm.astro
         │
         └── pages/
             ├── index.astro
@@ -140,7 +141,21 @@ level-works/
             └── reservas.astro
 ```
 
-> **Qué cambió respecto a la versión anterior:** `app/routes/views.py` y `app/templates/` (Jinja2 + HTMX) fueron eliminados por completo. El renderizado de cliente ahora vive enteramente en `frontend/`, y el backend expone únicamente JSON bajo `/api/v1`. SQLAdmin se mantiene como panel administrativo interno (sigue siendo SSR, pero no forma parte del frontend público).
+> **Qué cambió respecto a la versión anterior:** `app/routes/views.py` y `app/templates/` (Jinja2 + HTMX) fueron eliminados. El frontend ahora es un proyecto Astro independiente, **sin React ni ningún framework de UI** — toda la interactividad del flujo de reserva se resuelve con `<script>` nativo dentro de cada componente `.astro`, comunicándose entre sí vía `CustomEvent` en el `document`. El backend expone únicamente JSON bajo `/api/v1`. SQLAdmin se mantiene como panel administrativo interno (SSR, pero fuera del frontend público).
+
+---
+
+## Arquitectura del Frontend (Astro)
+
+Sin framework de UI, el estado del wizard de reserva se comparte entre componentes mediante eventos del DOM, no props ni stores:
+
+```
+ServiceSelect ──(service:selected)──▶ DatePicker ──(date:selected)──▶ TimeSlots ──(slot:selected)──▶ ReservationForm
+```
+
+Cada componente escucha el evento del paso anterior, hace su propio fetch a la API vía `lib/api.ts`, y dispara su propio evento al completarse. Esto evita acoplar componentes entre sí y mantiene cada `.astro` autocontenido (markup + estilos + su propio script).
+
+`output: 'static'` en `astro.config.mjs` — todo se compila a HTML/CSS/JS estático en build time; no hay SSR en producción, el servidor (nginx) solo sirve archivos.
 
 ---
 
@@ -148,57 +163,79 @@ level-works/
 
 ### Prerrequisitos
 
-* [Docker](https://www.docker.com/) y [Docker Compose](https://docs.docker.com/compose/) instalados (opción recomendada), **o**
-* [Python 3.10+](https://www.python.org/), [Node.js 20+](https://nodejs.org/) y [PostgreSQL](https://www.postgresql.org/) (para ejecución local nativa).
+* [Docker](https://www.docker.com/) y [Docker Compose](https://docs.docker.com/compose/) instalados. **No se necesita Node.js ni Python instalados localmente** — todo corre dentro de contenedores.
 
 ---
 
-### Opción 1: Con Docker Compose (Recomendado)
+### Configurar variables de entorno
 
-1. **Clonar el repositorio:**
-   ```bash
-   git clone <URL_DEL_REPOSITORIO>
-   cd level-works
-   ```
+```bash
+cp .env.example .env
+```
 
-2. **Configurar variables de entorno:**
-   Crea tu archivo `.env` copiando el archivo de plantilla `.env.example`:
-   ```bash
-   cp .env.example .env
-   ```
-   Contenido por defecto de `.env.example`:
-   ```env
-   # Base de datos
-   DB_NAME=levelworks_db
-   DB_USER=postgres
-   DB_PASSWORD=123
+```env
+# Aplicación
+APP_NAME=Level Works
+DEBUG=True
+SECRET_KEY=password
 
-   # Backend
-   JWT_SECRET=changeme
-   CORS_ORIGINS=http://localhost:4321
+# Backend (API)
+PORT=8000
+CORS_ORIGINS=http://localhost:4323
 
-   # Frontend
-   PUBLIC_API_URL=http://localhost:8000/api/v1
-   ```
+# Frontend (Astro)
+FRONTEND_PORT=4323
+PUBLIC_API_URL=http://localhost:8000/api/v1
 
-3. **Levantar los servicios:**
-   ```bash
-   docker-compose up -d --build
-   ```
-   Esto iniciará tres contenedores: `db` (PostgreSQL 16), `api` (FastAPI en Uvicorn) y `frontend` (Astro).
+# Base de Datos
+DB_NAME=levelworks_db
+DB_USER=postgres
+DB_PASSWORD=123
+DB_PORT=5432
 
-4. **Crear el usuario Administrador:**
-   Ejecuta el script interactivo dentro del contenedor de la API:
-   ```bash
-   docker exec -it level-works-api-1 python create_admin.py
-   ```
-   Sigue las instrucciones en pantalla para ingresar Email, Username y Contraseña.
+# Información de Contacto (Modal / Base HTML)
+CONTACT_EMAIL=contacto@gmail
+CONTACT_PHONE=+56912345678
+INSTAGRAM_HANDLE=@xxxxxxxx
+```
 
-5. **Acceder a la aplicación:**
-   * **Sitio Web / Reservas (Astro):** [http://localhost:4321](http://localhost:4321)
-   * **API (FastAPI):** [http://localhost:8000/api/v1](http://localhost:8000/api/v1)
-   * **Documentación interactiva (Swagger):** [http://localhost:8000/docs](http://localhost:8000/docs)
-   * **Panel Administrativo:** [http://localhost:8000/admin](http://localhost:8000/admin)
+---
+
+### Levantar todo el stack (producción)
+
+```bash
+docker-compose up -d --build
+```
+
+Levanta tres contenedores:
+* `db` — PostgreSQL 16
+* `api` — FastAPI en Uvicorn (`http://localhost:8000`)
+* `frontend` — Astro compilado a estático, servido por nginx (`http://localhost:4323`)
+
+**Crear el usuario Administrador:**
+```bash
+docker exec -it levelworks-api-1 python create_admin.py
+```
+
+**Acceder:**
+* **Sitio Web / Reservas (Astro):** [http://localhost:4323](http://localhost:4323)
+* **API (FastAPI):** [http://localhost:8000/api/v1](http://localhost:8000/api/v1)
+* **Docs interactivas (Swagger):** [http://localhost:8000/docs](http://localhost:8000/docs)
+* **Panel Administrativo:** [http://localhost:8000/admin](http://localhost:8000/admin)
+
+> El servicio `frontend` usa build multi-stage: compila con Node y descarta todo el entorno de Node en la imagen final, quedándose solo con los archivos estáticos servidos por nginx. Por eso **cualquier cambio en `frontend/src/` requiere rebuild** (`docker-compose up --build frontend`) — no hay hot-reload en este modo.
+
+---
+
+### Desarrollo del frontend con hot-reload
+
+Para iterar sobre componentes de Astro sin rebuildear en cada cambio, existe un servicio separado (`frontend-dev`) que corre `astro dev` con el código montado como volumen:
+
+```bash
+docker-compose up --build frontend-dev
+```
+
+Esto expone Astro en modo desarrollo en `http://localhost:4323` con recarga automática al guardar cualquier archivo en `src/`. No reemplaza al servicio `frontend` (producción) — se usan por separado, según lo que estés haciendo.
 
 ---
 
@@ -206,12 +243,12 @@ level-works/
 
 ### 1. Reservar una Cita (Experiencia del Cliente)
 
-1. Ingresa a `http://localhost:4321`.
-2. **Selecciona un Servicio:** Elige entre los servicios de autolavado disponibles (ej: Lavado Simple, Lavado Completo, Polimerizado), obtenidos desde `GET /api/v1/services`.
-3. **Selecciona una Fecha:** Al elegir un día en el calendario, el componente `TimeSlots` consulta `GET /api/v1/availability` de forma asíncrona.
-4. **Elige un Horario:** Selecciona uno de los bloques de hora disponibles devueltos por la API.
-5. **Completa los Datos:** Ingresa Nombre, Correo Electrónico, Teléfono y Notas adicionales.
-6. **Confirmar Reserva:** El formulario envía `POST /api/v1/reservations` y muestra la confirmación sin recarga de página.
+1. Ingresa a `http://localhost:4323`.
+2. **Selecciona un Servicio:** `ServiceSelect` obtiene el catálogo desde `GET /api/v1/services`.
+3. **Selecciona una Fecha:** `DatePicker` se habilita tras elegir servicio; al elegir fecha dispara `date:selected`.
+4. **Elige un Horario:** `TimeSlots` consulta `GET /api/v1/availability` y muestra los bloques disponibles.
+5. **Completa los Datos:** `ReservationForm` se habilita tras elegir horario — Nombre, Correo, Teléfono, Notas.
+6. **Confirmar Reserva:** Envía `POST /api/v1/reservations` y muestra la confirmación sin recarga de página.
 
 ### 2. Gestión Administrativa (Panel Admin)
 
@@ -249,3 +286,19 @@ Documentación completa e interactiva disponible en `/docs` (Swagger UI) y `/red
 | `\du` | Lista todos los **usuarios / roles** creados y sus respectivos permisos. | `\du` |
 | `\df` | Lista todas las **funciones** o procedimientos almacenados. | `\df` |
 | `\dn` | Lista los **esquemas** de la base de datos (por defecto verás `public`). | `\dn` |
+
+---
+
+## Comandos usados para levantar Astro (setup inicial, sin instalar Node localmente)
+
+Estos dos comandos se corren **una sola vez**, desde la raíz del repo, para generar el scaffold del proyecto Astro y agregar Tailwind v4 — todo dentro de un contenedor efímero de Node, sin dejar nada instalado en la máquina local:
+
+```bash
+docker run --rm -it -v "${PWD}/frontend:/app" -w /app node:22-alpine sh -c "npm create astro@latest ."
+```
+
+```bash
+docker run --rm -it -v "${PWD}/frontend:/app" -w /app node:22-alpine sh -c "npm install tailwindcss @tailwindcss/vite tw-animate-css"
+```
+
+> **Importante:** ambos comandos deben correrse parado en la **raíz del repo** (`level-works/`), no dentro de `frontend/` — de lo contrario el volumen monta una ruta con `frontend/frontend` duplicado. En PowerShell (Windows), si estás parado dentro de `frontend/`, usa `-v "${PWD}:/app"` (sin agregar `/frontend` de nuevo).
