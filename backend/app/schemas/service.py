@@ -1,14 +1,28 @@
-from pydantic import BaseModel
+# app/schemas/service.py
+from pydantic import BaseModel, ConfigDict
 
-class ServiceSchema(BaseModel):
+
+class ServiceBase(BaseModel):
     name: str
-    description: str
+    description: str | None = None
     price: float
-    image: str
+    duration_minutes: int = 30
+
+
+class ServiceCreateSchema(ServiceBase):
+    pass
 
 
 class ServiceUpdateSchema(BaseModel):
     name: str | None = None
     description: str | None = None
     price: float | None = None
-    image: str | None = None
+    duration_minutes: int | None = None
+
+
+class ServiceResponseSchema(ServiceBase):
+    id: int
+    is_active: bool
+    photo: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)  # permite serializar desde el ORM
