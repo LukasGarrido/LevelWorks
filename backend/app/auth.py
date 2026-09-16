@@ -4,10 +4,8 @@ from sqlalchemy import select
 
 from app.core.db.database import async_session
 from app.models.user import User, Rol, Permission
-from app.config import get_settings
+from app.config import settings
 from app.core.security import verify_password, hash_password
-
-settings = get_settings()
 
 class AdminAuth(AuthenticationBackend):
     def __init__(self):
@@ -15,8 +13,6 @@ class AdminAuth(AuthenticationBackend):
 
     async def login(self, request: Request) -> bool:
         form = await request.form()
-        # El formulario de SQLAdmin usa 'username' y 'password'
-        # Usaremos 'username' para recibir el email
         username = form.get("username")
         password = form.get("password")
 
