@@ -23,7 +23,11 @@ class User(Base):
     username = Column(String(255), unique=True, nullable=False, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     hashed_password = Column(String(255), nullable=False)
-    rol = Column(Enum(Rol), default=Rol.USER, nullable=False)
+    rol = Column(
+        Enum(Rol, values_callable=lambda x: [e.value for e in x]),
+        default=Rol.USER,
+        nullable=False,
+    )
     permissions = Column(JSON, default=lambda: [Permission.READ.value], nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
