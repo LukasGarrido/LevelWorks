@@ -10,7 +10,7 @@ class ServiceBase(BaseModel):
 
 
 class ServiceCreateSchema(ServiceBase):
-    pass
+    is_active: bool = True
 
 
 class ServiceUpdateSchema(BaseModel):
@@ -18,6 +18,7 @@ class ServiceUpdateSchema(BaseModel):
     description: str | None = None
     price: float | None = None
     duration_minutes: int | None = None
+    is_active: bool | None = None
 
 
 class ServiceResponseSchema(ServiceBase):

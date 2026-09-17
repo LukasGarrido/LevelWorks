@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Text, Float, DateTime, Enum
+from sqlalchemy import Column, Integer, String, Text, Float, Boolean, DateTime, Enum
 from sqlalchemy.orm import relationship
 from app.core.db.database import Base
 from app.core.storage import storage, ImageType
@@ -16,6 +16,7 @@ class Service(Base):
     price = Column(Float, nullable=False)
     photo = Column(ImageType(storage=storage), nullable=True)
     duration_minutes = Column(Integer, nullable=False, default=30)
+    is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relaciones
