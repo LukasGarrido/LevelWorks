@@ -5,8 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_async_session
+from app.api.deps import get_async_session, get_current_admin
 from app.models.service import Service
+from app.models.user import User
 from app.schemas.service import (
     ServiceCreateSchema,
     ServiceUpdateSchema,
@@ -34,7 +35,11 @@ async def get_service(id: int, session: AsyncSession = Depends(get_async_session
 
 
 @router.post("/", response_model=ServiceResponseSchema, status_code=status.HTTP_201_CREATED)
-async def create_service(service_in: ServiceCreateSchema, session: AsyncSession = Depends(get_async_session)):
+async def create_service(
+    service_in: ServiceCreateSchema, 
+    session: AsyncSession = Depends(get_async_session), 
+    _admin: User = Depends(get_current_admin),
+):
     """Crea un nuevo servicio."""
     nuevo_servicio = Service(**service_in.model_dump())
     session.add(nuevo_servicio)
@@ -44,7 +49,12 @@ async def create_service(service_in: ServiceCreateSchema, session: AsyncSession 
 
 
 @router.put("/{id}", response_model=ServiceResponseSchema)
-async def update_service(id: int, service_in: ServiceUpdateSchema, session: AsyncSession = Depends(get_async_session)):
+async def update_service(
+    id: int,
+    service_in: ServiceUpdateSchema,
+    session: AsyncSession = Depends(get_async_session),
+    _admin: User = Depends(get_current_admin),
+):
     """Actualiza un servicio por su id."""
     result = await session.scalars(select(Service).where(Service.id == id))
     service = result.first()
@@ -60,7 +70,11 @@ async def update_service(id: int, service_in: ServiceUpdateSchema, session: Asyn
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_service(id: int, session: AsyncSession = Depends(get_async_session)):
+async def delete_service(
+    id: int,
+    session: AsyncSession = Depends(get_async_session),
+    _admin: User = Depends(get_current_admin),
+):
     """Elimina un servicio por su id."""
     result = await session.scalars(select(Service).where(Service.id == id))
     service = result.first()

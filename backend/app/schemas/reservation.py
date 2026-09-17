@@ -1,11 +1,18 @@
 # app/schemas/reservation.py
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict
 from app.models.client import ReservationStatus
 
 
+class ReservationClientInfo(BaseModel):
+    """Datos del cliente que reserva, provistos junto con la reserva."""
+    name: str
+    email: EmailStr
+    phone: str
+
+
 class ReservationCreateSchema(BaseModel):
-    client_id: int
+    client: ReservationClientInfo
     service_id: int
     scheduled_at: datetime
     vehicle: str | None = None

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_async_session
+from app.api.deps import get_async_session, get_current_admin
 from app.models.user import User
 from app.core.security import hash_password
 from app.schemas.user import (
@@ -18,15 +18,22 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.get("/", response_model=List[UserResponseSchema])
-async def get_users(session: AsyncSession = Depends(get_async_session)):
-    """Obtiene todos los usuarios."""
+async def get_users(
+    session: AsyncSession = Depends(get_async_session),
+    _admin: User = Depends(get_current_admin),
+):
+    """Obtiene todos los usuarios. Solo administradores."""
     result = await session.scalars(select(User))
     return result.all()
 
 
 @router.get("/{id}", response_model=UserResponseSchema)
-async def get_user(id: int, session: AsyncSession = Depends(get_async_session)):
-    """Obtiene un usuario por su id."""
+async def get_user(
+    id: int,
+    session: AsyncSession = Depends(get_async_session),
+    _admin: User = Depends(get_current_admin),
+):
+    """Obtiene un usuario por su id. Solo administradores."""
     result = await session.scalars(select(User).where(User.id == id))
     user = result.first()
     if not user:
@@ -35,9 +42,12 @@ async def get_user(id: int, session: AsyncSession = Depends(get_async_session)):
 
 
 @router.post("/", response_model=UserResponseSchema, status_code=status.HTTP_201_CREATED)
-async def create_user(user_in: UserRegisterSchema, session: AsyncSession = Depends(get_async_session)):
-    """Crea un nuevo usuario."""
-    # Verificar email duplicado
+async def create_user(
+    user_in: UserRegisterSchema,
+    session: AsyncSession = Depends(get_async_session),
+    _admin: User = Depends(get_current_admin),
+):
+    """Crea un nuevo usuario interno. Solo administradores."""
     existing = await session.scalars(select(User).where(User.email == user_in.email))
     if existing.first():
         raise HTTPException(
@@ -45,7 +55,6 @@ async def create_user(user_in: UserRegisterSchema, session: AsyncSession = Depen
             detail="Ya existe un usuario con ese email",
         )
 
-    # Verificar username duplicado
     existing = await session.scalars(select(User).where(User.username == user_in.username))
     if existing.first():
         raise HTTPException(
@@ -64,8 +73,13 @@ async def create_user(user_in: UserRegisterSchema, session: AsyncSession = Depen
 
 
 @router.put("/{id}", response_model=UserResponseSchema)
-async def update_user(id: int, user_in: UserUpdateSchema, session: AsyncSession = Depends(get_async_session)):
-    """Actualiza un usuario por su id."""
+async def update_user(
+    id: int,
+    user_in: UserUpdateSchema,
+    session: AsyncSession = Depends(get_async_session),
+    _admin: User = Depends(get_current_admin),
+):
+    """Actualiza un usuario por su id. Solo administradores."""
     result = await session.scalars(select(User).where(User.id == id))
     user = result.first()
     if not user:
@@ -73,7 +87,6 @@ async def update_user(id: int, user_in: UserUpdateSchema, session: AsyncSession 
 
     update_data = user_in.model_dump(exclude_unset=True)
 
-    # Si se actualiza password, hashearla
     if "password" in update_data:
         if update_data["password"]:
             update_data["hashed_password"] = hash_password(update_data.pop("password"))
@@ -89,8 +102,12 @@ async def update_user(id: int, user_in: UserUpdateSchema, session: AsyncSession 
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user(id: int, session: AsyncSession = Depends(get_async_session)):
-    """Elimina un usuario por su id."""
+async def delete_user(
+    id: int,
+    session: AsyncSession = Depends(get_async_session),
+    _admin: User = Depends(get_current_admin),
+):
+    """Elimina un usuario por su id. Solo administradores."""
     result = await session.scalars(select(User).where(User.id == id))
     user = result.first()
     if not user:

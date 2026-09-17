@@ -6,10 +6,11 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_async_session
+from app.api.deps import get_async_session, get_current_admin
 from app.models.reservation import Reservation
 from app.models.client import Client, ReservationStatus
 from app.models.service import Service
+from app.models.user import User
 from app.schemas.reservation import (
     ReservationCreateSchema,
     ReservationUpdateSchema,
@@ -21,15 +22,22 @@ router = APIRouter(prefix="/reservations", tags=["Reservations"])
 
 
 @router.get("/", response_model=List[ReservationResponseSchema])
-async def get_reservations(session: AsyncSession = Depends(get_async_session)):
-    """Obtiene todas las reservas."""
+async def get_reservations(
+    session: AsyncSession = Depends(get_async_session),
+    _admin: User = Depends(get_current_admin),
+):
+    """Obtiene todas las reservas. Solo administradores."""
     result = await session.scalars(select(Reservation))
     return result.all()
 
 
 @router.get("/{id}", response_model=ReservationResponseSchema)
-async def get_reservation(id: int, session: AsyncSession = Depends(get_async_session)):
-    """Obtiene una reserva por su id."""
+async def get_reservation(
+    id: int,
+    session: AsyncSession = Depends(get_async_session),
+    _admin: User = Depends(get_current_admin),
+):
+    """Obtiene una reserva por su id. Solo administradores."""
     result = await session.scalars(select(Reservation).where(Reservation.id == id))
     reservation = result.first()
     if not reservation:
@@ -42,15 +50,11 @@ async def create_reservation(
     reservation_in: ReservationCreateSchema,
     session: AsyncSession = Depends(get_async_session),
 ):
-    """Crea una nueva reserva."""
-    # Verificar que el cliente existe
-    client = await session.get(Client, reservation_in.client_id)
-    if not client:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Cliente no encontrado",
-        )
+    """Crea una nueva reserva. Endpoint público — no requiere cuenta.
 
+    Busca al cliente por email; si no existe, lo crea con los datos
+    provistos en el mismo request.
+    """
     # Verificar que el servicio existe
     service = await session.get(Service, reservation_in.service_id)
     if not service:
@@ -59,7 +63,24 @@ async def create_reservation(
             detail="Servicio no encontrado",
         )
 
-    nueva_reserva = Reservation(**reservation_in.model_dump())
+    # Buscar cliente por email, o crearlo si no existe
+    result = await session.scalars(
+        select(Client).where(Client.email == reservation_in.client.email)
+    )
+    client = result.first()
+
+    if not client:
+        client = Client(**reservation_in.client.model_dump())
+        session.add(client)
+        await session.flush()  # asigna client.id sin cerrar la transacción
+
+    nueva_reserva = Reservation(
+        client_id=client.id,
+        service_id=reservation_in.service_id,
+        scheduled_at=reservation_in.scheduled_at,
+        vehicle=reservation_in.vehicle,
+        notes=reservation_in.notes,
+    )
     session.add(nueva_reserva)
 
     try:
@@ -79,8 +100,9 @@ async def update_reservation(
     id: int,
     reservation_in: ReservationUpdateSchema,
     session: AsyncSession = Depends(get_async_session),
+    _admin: User = Depends(get_current_admin),
 ):
-    """Actualiza una reserva por su id."""
+    """Actualiza una reserva por su id. Solo administradores."""
     result = await session.scalars(select(Reservation).where(Reservation.id == id))
     reservation = result.first()
     if not reservation:
@@ -88,13 +110,11 @@ async def update_reservation(
 
     update_data = reservation_in.model_dump(exclude_unset=True)
 
-    # Verificar FK si se cambia client_id
     if "client_id" in update_data:
         client = await session.get(Client, update_data["client_id"])
         if not client:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cliente no encontrado")
 
-    # Verificar FK si se cambia service_id
     if "service_id" in update_data:
         service = await session.get(Service, update_data["service_id"])
         if not service:
@@ -120,8 +140,9 @@ async def update_reservation_status(
     id: int,
     status_in: ReservationStatusUpdateSchema,
     session: AsyncSession = Depends(get_async_session),
+    _admin: User = Depends(get_current_admin),
 ):
-    """Actualiza únicamente el status de una reserva."""
+    """Actualiza únicamente el status de una reserva. Solo administradores."""
     result = await session.scalars(select(Reservation).where(Reservation.id == id))
     reservation = result.first()
     if not reservation:
@@ -134,8 +155,12 @@ async def update_reservation_status(
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_reservation(id: int, session: AsyncSession = Depends(get_async_session)):
-    """Elimina una reserva por su id."""
+async def delete_reservation(
+    id: int,
+    session: AsyncSession = Depends(get_async_session),
+    _admin: User = Depends(get_current_admin),
+):
+    """Elimina una reserva por su id. Solo administradores."""
     result = await session.scalars(select(Reservation).where(Reservation.id == id))
     reservation = result.first()
     if not reservation:
