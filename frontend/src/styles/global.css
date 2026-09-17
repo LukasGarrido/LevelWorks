@@ -1,0 +1,230 @@
+/* src/styles/global.css */
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@source "../src";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
+    --radius-3xl: calc(var(--radius) + 12px);
+    --radius-4xl: calc(var(--radius) + 16px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+}
+
+/* ---- Tipografía requerida ---- */
+@theme {
+    --font-sans: "DM Sans", sans-serif;
+    --font-display: "Space Grotesk", sans-serif;
+}
+
+:root {
+    /* Modo Claro (Warm Cream con acentos naranjas) */
+    --radius: 0.625rem;
+
+    /* Fondos y Textos principales */
+    --background: oklch(0.965 0.006 75);
+    --foreground: oklch(0.28 0.003 270);
+
+    --card: oklch(0.965 0.006 75);
+    --card-foreground: oklch(0.28 0.003 270);
+    --popover: oklch(0.965 0.006 75);
+    --popover-foreground: oklch(0.28 0.003 270);
+
+    /* Acento principal / Naranja cálido */
+    --primary: oklch(0.62 0.20 38);
+    /* Naranja vibrante para CTAs/puntos de contraste */
+    --primary-foreground: oklch(0.98 0.005 75);
+
+    /* Tonos neutros cálidos */
+    --secondary: oklch(0.92 0.012 65);
+    --secondary-foreground: oklch(0.28 0.003 270);
+    --muted: oklch(0.92 0.012 65);
+    --muted-foreground: oklch(0.50 0.008 65);
+
+    /* Destacados / Hover */
+    --accent: oklch(0.90 0.025 55);
+    /* Tono suave anaranjado/crema para áreas interactivas */
+    --accent-foreground: oklch(0.28 0.003 270);
+
+    /* Destructivo / Alerta */
+    --destructive: oklch(0.577 0.245 27.325);
+    /* Rojo-naranja intenso */
+    --destructive-foreground: oklch(0.965 0.006 75);
+
+    /* Bordes e Inputs */
+    --border: oklch(0.90 0.01 70);
+    --input: oklch(0.90 0.01 70);
+    --ring: oklch(0.62 0.20 38);
+}
+
+.dark {
+    /* Modo Oscuro (Warm Graphite con acentos naranjas) */
+    --background: oklch(0.20 0.008 60);
+    --foreground: oklch(0.97 0.005 80);
+
+    --card: oklch(0.22 0.008 60);
+    --card-foreground: oklch(0.97 0.005 80);
+    --popover: oklch(0.22 0.008 60);
+    --popover-foreground: oklch(0.97 0.005 80);
+
+    /* En modo oscuro el primary naranja mantiene visibilidad alta */
+    --primary: oklch(0.65 0.22 38);
+    --primary-foreground: oklch(0.18 0.008 60);
+
+    --secondary: oklch(0.26 0.008 60);
+    --secondary-foreground: oklch(0.97 0.005 80);
+
+    --muted: oklch(0.25 0.008 60);
+    --muted-foreground: oklch(0.72 0.005 70);
+
+    --accent: oklch(0.28 0.015 50);
+    --accent-foreground: oklch(0.97 0.005 80);
+
+    --border: oklch(0.28 0.008 60);
+    --input: oklch(0.28 0.008 60);
+    --ring: oklch(0.65 0.22 38);
+
+    --destructive: oklch(0.577 0.245 27.325);
+    --destructive-foreground: oklch(0.97 0.005 80);
+}
+
+@layer base {
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+        border-color: var(--color-border);
+        transition:
+            background-color 0.2s ease,
+            color 0.2s ease,
+            border-color 0.2s ease;
+    }
+
+    html {
+        color-scheme: light dark;
+    }
+
+    body {
+        margin: 0;
+        background-color: var(--color-background);
+        color: var(--color-foreground);
+        font-family: var(--font-sans);
+        font-size: 1rem;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: var(--font-display);
+        margin: 0;
+        color: inherit;
+    }
+
+    p {
+        margin: 0;
+    }
+
+    a {
+        color: inherit;
+    }
+}
+
+/* Layout utilities */
+.wrapper {
+    max-width: 1120px;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.section {
+    padding-block: 5.5rem;
+}
+
+.section--tight {
+    padding-block: 4rem;
+}
+
+.section-head {
+    margin-bottom: 2.5rem;
+}
+
+.section-full {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: 0;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* Animaciones al scroll */
+.fade-on-scroll {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+        opacity 0.6s ease,
+        transform 0.6s ease;
+    will-change: opacity, transform;
+}
+
+.fade-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .fade-on-scroll {
+        transition: none;
+        opacity: 1;
+        transform: none;
+    }
+}
