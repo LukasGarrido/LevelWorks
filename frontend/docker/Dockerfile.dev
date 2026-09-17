@@ -5,6 +5,8 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
 
-EXPOSE 4321
+COPY . .
 
-CMD ["npm", "run", "dev", "--", "--host"]
+EXPOSE 4323
+
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "4323"]
