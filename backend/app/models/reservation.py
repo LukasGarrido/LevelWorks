@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, ForeignKey, Index, text
 from sqlalchemy.orm import relationship
@@ -29,8 +29,9 @@ class Reservation(Base):
     )
     vehicle = Column(String(150), nullable=True)
     notes = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
+    # Relaciones
     client = relationship("Client", back_populates="reservations")
     service = relationship("Service", back_populates="reservations")
 

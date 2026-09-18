@@ -1,5 +1,5 @@
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Column, Integer, String, DateTime, Enum, JSON
 from app.core.db.database import Base
@@ -29,7 +29,7 @@ class User(Base):
         nullable=False,
     )
     permissions = Column(JSON, default=lambda: [Permission.READ.value], nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     def has_permission(self, required_permission: Permission) -> bool:
         if self.rol == Rol.ADMIN:

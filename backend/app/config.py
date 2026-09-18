@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "Level Works"
     DEBUG: bool = False
     PORT: int = 8000
-    SECRET_KEY: str = "changeme"
+    SECRET_KEY: str 
     DATABASE_URL: str = "sqlite+aiosqlite:///./level_works.db"
     CORS_ORIGINS: str = "http://localhost:4323"
     CONTACT_EMAIL: str = "[EMAIL_ADDRESS]"
