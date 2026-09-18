@@ -12,6 +12,7 @@ from sqlalchemy.exc import IntegrityError
 from app.models.reservation import Reservation
 from app.models.client import Client, ReservationStatus
 from app.models.service import Service
+from app.services.catalog_service import ServiceNotFoundError
 
 
 class ReservationConflictError(Exception):
@@ -24,8 +25,8 @@ class ReservationNotFoundError(Exception):
     pass
 
 
-class ServiceNotFoundError(Exception):
-    """El servicio solicitado no existe."""
+class ClientNotFoundError(Exception):
+    """El cliente solicitado no existe."""
     pass
 
 
@@ -116,7 +117,7 @@ async def actualizar_reserva(
     if "client_id" in update_data:
         client = await db.get(Client, update_data["client_id"])
         if not client:
-            raise ReservationNotFoundError("Cliente no encontrado")  # ver nota abajo
+            raise ClientNotFoundError("Cliente no encontrado")
 
     for field, value in update_data.items():
         setattr(reservation, field, value)
