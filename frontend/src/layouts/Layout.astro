@@ -1,16 +1,14 @@
 ---
-// src/layouts/Layout.astro
 import "../styles/global.css";
+import Header from "../components/layout/Header.astro";
+import Footer from "../components/layout/Footer.astro";
 
 interface Props {
-	title?: string;
+	title: string;
 	description?: string;
 }
 
-const {
-	title = "LevelWorks — Tu auto impecable, sin filas ni esperas",
-	description = "Reserva tu servicio de lavado y detallado automotriz de forma rápida y sin esperas.",
-} = Astro.props;
+const { title, description = "Reserva tu lavado en Xperience" } = Astro.props;
 ---
 
 <!doctype html>
@@ -18,14 +16,9 @@ const {
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-
-		<!-- SEO Meta Tags -->
-		<title>{title}</title>
 		<meta name="description" content={description} />
+		<title>{title} · Xperience</title>
 
-		<!-- Google Fonts: DM Sans & Space Grotesk -->
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -33,29 +26,31 @@ const {
 			rel="stylesheet"
 		/>
 	</head>
-	<body>
-		<slot />
+	<body
+		class="min-h-screen bg-background text-foreground font-sans antialiased"
+	>
+		<Header />
+		<main>
+			<slot />
+		</main>
+		<Footer />
 
-		<!-- Script para animaciones al hacer scroll -->
 		<script>
-			const observerOptions = {
-				root: null,
-				rootMargin: "0px",
-				threshold: 0.1,
-			};
-
-			const observer = new IntersectionObserver((entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						entry.target.classList.add("is-visible");
-					}
-				});
-			}, observerOptions);
+			const observer = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((entry) => {
+						if (entry.isIntersecting) {
+							entry.target.classList.add("is-visible");
+						}
+					});
+				},
+				{ threshold: 0.1 },
+			);
 
 			document.addEventListener("DOMContentLoaded", () => {
-				const animatedElements =
-					document.querySelectorAll(".fade-on-scroll");
-				animatedElements.forEach((el) => observer.observe(el));
+				document
+					.querySelectorAll(".fade-on-scroll")
+					.forEach((el) => observer.observe(el));
 			});
 		</script>
 	</body>

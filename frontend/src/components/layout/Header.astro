@@ -1,0 +1,38 @@
+---
+const navItems = [
+    { label: "Servicios", href: "/#servicios" },
+    { label: "Cómo funciona", href: "/#como-funciona" },
+    { label: "Reservar", href: "/#reservar" },
+];
+---
+
+<header
+    class="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur"
+>
+    <div class="wrapper flex items-center justify-between py-4">
+        <a
+            href="/"
+            class="font-display text-xl font-bold tracking-tight text-foreground"
+        >
+            Xperience<span class="text-primary">.</span>
+        </a>
+        <nav class="hidden gap-6 md:flex">
+            {
+                navItems.map((item) => (
+                    <a
+                        href={item.href}
+                        class="text-sm font-medium text-muted-foreground transition hover:text-foreground"
+                    >
+                        {item.label}
+                    </a>
+                ))
+            }
+        </nav>
+        <a
+            href="/#reservar"
+            class="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+        >
+            Agendar cita
+        </a>
+    </div>
+</header>

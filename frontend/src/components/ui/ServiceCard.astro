@@ -1,0 +1,51 @@
+---
+import type { Service } from "../../lib/types";
+
+interface Props {
+    service: Service;
+    selected?: boolean;
+}
+
+const { service, selected = false } = Astro.props;
+---
+
+<article
+    class:list={[
+        "rounded-2xl border p-5 transition-all duration-200 cursor-pointer bg-card",
+        selected
+            ? "border-primary bg-primary/5 ring-1 ring-primary"
+            : "border-border hover:border-primary/50",
+    ]}
+    data-service-id={service.id}
+    data-service-name={service.name}
+    data-service-price={service.price}
+>
+    {
+        service.photo && (
+            <img
+                src={service.photo}
+                alt={service.name}
+                class="mb-4 h-36 w-full rounded-xl object-cover"
+                loading="lazy"
+            />
+        )
+    }
+    <h3 class="font-display text-lg font-semibold text-foreground">
+        {service.name}
+    </h3>
+    {
+        service.description && (
+            <p class="mt-1 text-sm text-muted-foreground">
+                {service.description}
+            </p>
+        )
+    }
+    <div class="mt-4 flex items-center justify-between">
+        <span class="text-lg font-bold text-primary"
+            >${service.price.toLocaleString("es-CL")}</span
+        >
+        <span class="text-xs text-muted-foreground"
+            >{service.duration_minutes} min</span
+        >
+    </div>
+</article>

@@ -1,0 +1,51 @@
+---
+import { getServices } from "../../lib/api";
+import ServiceCard from "../ui/ServiceCard.astro";
+
+let services: Awaited<ReturnType<typeof getServices>> = [];
+let error = false;
+
+try {
+    services = await getServices();
+} catch {
+    error = true;
+}
+---
+
+<section id="servicios" class="section bg-background fade-on-scroll">
+    <div class="wrapper">
+        <div class="section-head text-center">
+            <h2
+                class="font-display text-3xl font-bold text-foreground sm:text-4xl"
+            >
+                Nuestros servicios
+            </h2>
+        </div>
+
+        {
+            error && (
+                <div class="rounded-2xl border border-destructive/30 bg-destructive/10 p-6 text-center text-sm text-destructive">
+                    Servicios no disponibles temporalmente.
+                </div>
+            )
+        }
+
+        {
+            !error && services.length === 0 && (
+                <p class="text-center text-sm text-muted-foreground">
+                    Aún no hay servicios cargados.
+                </p>
+            )
+        }
+
+        {
+            !error && services.length > 0 && (
+                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {services.map((service) => (
+                        <ServiceCard service={service} />
+                    ))}
+                </div>
+            )
+        }
+    </div>
+</section>

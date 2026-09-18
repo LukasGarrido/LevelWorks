@@ -1,0 +1,48 @@
+---
+const steps = [
+    {
+        n: "01",
+        title: "Elige tu servicio",
+        desc: "Selecciona el tipo de lavado que requiere tu vehículo.",
+    },
+    {
+        n: "02",
+        title: "Selecciona fecha y hora",
+        desc: "Escoge el horario disponible que más te convenga.",
+    },
+    {
+        n: "03",
+        title: "Confirma tu reserva",
+        desc: "Recibe la confirmación inmediata y llega directo a tu hora.",
+    },
+];
+---
+
+<section id="como-funciona" class="section bg-secondary/50 fade-on-scroll">
+    <div class="wrapper">
+        <div class="section-head text-center">
+            <h2
+                class="font-display text-3xl font-bold text-foreground sm:text-4xl"
+            >
+                Así de simple
+            </h2>
+        </div>
+        <div class="grid gap-8 md:grid-cols-3">
+            {
+                steps.map((s) => (
+                    <div class="rounded-2xl border border-border/50 bg-card p-8 text-center shadow-sm">
+                        <span class="font-display text-5xl font-extrabold text-primary/30">
+                            {s.n}
+                        </span>
+                        <h3 class="mt-4 font-display text-xl font-semibold text-foreground">
+                            {s.title}
+                        </h3>
+                        <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
+                            {s.desc}
+                        </p>
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+</section>

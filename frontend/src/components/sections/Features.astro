@@ -1,0 +1,35 @@
+---
+const features = [
+    {
+        title: "Horarios reales",
+        desc: "Tu auto listo en el tiempo estimado, sin demoras.",
+    },
+    {
+        title: "Productos premium",
+        desc: "Cuidamos la pintura y los acabados de tu vehículo.",
+    },
+    {
+        title: "Detalle experto",
+        desc: "Atención meticulosa a cada rincón interior y exterior.",
+    },
+];
+---
+
+<section class="section border-t border-border bg-background fade-on-scroll">
+    <div class="wrapper">
+        <div class="grid gap-6 md:grid-cols-3">
+            {
+                features.map((f) => (
+                    <div class="rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary/40">
+                        <h3 class="font-display text-lg font-semibold text-foreground">
+                            {f.title}
+                        </h3>
+                        <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
+                            {f.desc}
+                        </p>
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+</section>
