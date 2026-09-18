@@ -1,12 +1,17 @@
-/* src/styles/global.css */
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@source "../src";
+/* Escaneo del directorio completo de src */
+@source "../";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    /* Tipografía */
+    --font-sans: "DM Sans", sans-serif;
+    --font-display: "Space Grotesk", sans-serif;
+
+    /* Radios de borde */
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
@@ -15,6 +20,7 @@
     --radius-3xl: calc(var(--radius) + 12px);
     --radius-4xl: calc(var(--radius) + 16px);
 
+    /* Mapeo de Colores del Tema */
     --color-background: var(--background);
     --color-foreground: var(--foreground);
     --color-card: var(--card);
@@ -36,17 +42,10 @@
     --color-ring: var(--ring);
 }
 
-/* ---- Tipografía requerida ---- */
-@theme {
-    --font-sans: "DM Sans", sans-serif;
-    --font-display: "Space Grotesk", sans-serif;
-}
-
 :root {
     /* Modo Claro (Warm Cream con acentos naranjas) */
     --radius: 0.625rem;
 
-    /* Fondos y Textos principales */
     --background: oklch(0.965 0.006 75);
     --foreground: oklch(0.28 0.003 270);
 
@@ -55,28 +54,20 @@
     --popover: oklch(0.965 0.006 75);
     --popover-foreground: oklch(0.28 0.003 270);
 
-    /* Acento principal / Naranja cálido */
     --primary: oklch(0.62 0.20 38);
-    /* Naranja vibrante para CTAs/puntos de contraste */
     --primary-foreground: oklch(0.98 0.005 75);
 
-    /* Tonos neutros cálidos */
     --secondary: oklch(0.92 0.012 65);
     --secondary-foreground: oklch(0.28 0.003 270);
     --muted: oklch(0.92 0.012 65);
     --muted-foreground: oklch(0.50 0.008 65);
 
-    /* Destacados / Hover */
     --accent: oklch(0.90 0.025 55);
-    /* Tono suave anaranjado/crema para áreas interactivas */
     --accent-foreground: oklch(0.28 0.003 270);
 
-    /* Destructivo / Alerta */
     --destructive: oklch(0.577 0.245 27.325);
-    /* Rojo-naranja intenso */
     --destructive-foreground: oklch(0.965 0.006 75);
 
-    /* Bordes e Inputs */
     --border: oklch(0.90 0.01 70);
     --input: oklch(0.90 0.01 70);
     --ring: oklch(0.62 0.20 38);
@@ -92,7 +83,6 @@
     --popover: oklch(0.22 0.008 60);
     --popover-foreground: oklch(0.97 0.005 80);
 
-    /* En modo oscuro el primary naranja mantiene visibilidad alta */
     --primary: oklch(0.65 0.22 38);
     --primary-foreground: oklch(0.18 0.008 60);
 
@@ -114,18 +104,6 @@
 }
 
 @layer base {
-
-    *,
-    *::before,
-    *::after {
-        box-sizing: border-box;
-        border-color: var(--color-border);
-        transition:
-            background-color 0.2s ease,
-            color 0.2s ease,
-            border-color 0.2s ease;
-    }
-
     html {
         color-scheme: light dark;
     }
@@ -205,9 +183,7 @@
 .fade-on-scroll {
     opacity: 0;
     transform: translateY(24px);
-    transition:
-        opacity 0.6s ease,
-        transform 0.6s ease;
+    transition: opacity 0.6s ease, transform 0.6s ease;
     will-change: opacity, transform;
 }
 
@@ -217,11 +193,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
-    }
-
     .fade-on-scroll {
         transition: none;
         opacity: 1;
