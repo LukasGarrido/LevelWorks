@@ -2,20 +2,27 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_async_session, get_current_admin
-from app.models.reservation import Reservation
-from app.models.client import Client, ReservationStatus
-from app.models.service import Service
 from app.models.user import User
 from app.schemas.reservation import (
     ReservationCreateSchema,
     ReservationUpdateSchema,
     ReservationStatusUpdateSchema,
     ReservationResponseSchema,
+)
+from app.services.reservation_service import (
+    crear_reserva,
+    obtener_reserva,
+    listar_reservas,
+    actualizar_reserva,
+    actualizar_estado_reserva,
+    eliminar_reserva,
+    ReservationConflictError,
+    ReservationNotFoundError,
+    ServiceNotFoundError,
+    ClientNotFoundError,
 )
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
@@ -27,8 +34,7 @@ async def get_reservations(
     _admin: User = Depends(get_current_admin),
 ):
     """Obtiene todas las reservas. Solo administradores."""
-    result = await session.scalars(select(Reservation))
-    return result.all()
+    return await listar_reservas(session)
 
 
 @router.get("/{id}", response_model=ReservationResponseSchema)
@@ -38,11 +44,10 @@ async def get_reservation(
     _admin: User = Depends(get_current_admin),
 ):
     """Obtiene una reserva por su id. Solo administradores."""
-    result = await session.scalars(select(Reservation).where(Reservation.id == id))
-    reservation = result.first()
-    if not reservation:
+    try:
+        return await obtener_reserva(session, id)
+    except ReservationNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reserva no encontrada")
-    return reservation
 
 
 @router.post("/", response_model=ReservationResponseSchema, status_code=status.HTTP_201_CREATED)
@@ -50,45 +55,21 @@ async def create_reservation(
     reservation_in: ReservationCreateSchema,
     session: AsyncSession = Depends(get_async_session),
 ):
-    """Crea una nueva reserva. Endpoint público — no requiere cuenta.
-
-    Busca al cliente por email; si no existe, lo crea con los datos
-    provistos en el mismo request.
-    """
-    # Verificar que el servicio existe
-    service = await session.get(Service, reservation_in.service_id)
-    if not service:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Servicio no encontrado",
-        )
-
-    # Buscar cliente por email, o crearlo si no existe
-    result = await session.scalars(
-        select(Client).where(Client.email == reservation_in.client.email)
-    )
-    client = result.first()
-
-    if not client:
-        client = Client(**reservation_in.client.model_dump())
-        session.add(client)
-        await session.flush()  # asigna client.id sin cerrar la transacción
-
-    nueva_reserva = Reservation(
-        client_id=client.id,
-        service_id=reservation_in.service_id,
-        scheduled_at=reservation_in.scheduled_at,
-        vehicle=reservation_in.vehicle,
-        notes=reservation_in.notes,
-    )
-    session.add(nueva_reserva)
-
+    """Crea una nueva reserva. Endpoint público — no requiere cuenta."""
     try:
-        await session.commit()
-        await session.refresh(nueva_reserva)
-        return nueva_reserva
-    except IntegrityError:
-        await session.rollback()
+        return await crear_reserva(
+            db=session,
+            service_id=reservation_in.service_id,
+            scheduled_at=reservation_in.scheduled_at,
+            client_name=reservation_in.client.name,
+            client_email=reservation_in.client.email,
+            client_phone=reservation_in.client.phone,
+            vehicle=reservation_in.vehicle,
+            notes=reservation_in.notes,
+        )
+    except ServiceNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Servicio no encontrado")
+    except ReservationConflictError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Conflicto: el horario seleccionado ya está ocupado",
@@ -103,32 +84,16 @@ async def update_reservation(
     _admin: User = Depends(get_current_admin),
 ):
     """Actualiza una reserva por su id. Solo administradores."""
-    result = await session.scalars(select(Reservation).where(Reservation.id == id))
-    reservation = result.first()
-    if not reservation:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reserva no encontrada")
-
     update_data = reservation_in.model_dump(exclude_unset=True)
-
-    if "client_id" in update_data:
-        client = await session.get(Client, update_data["client_id"])
-        if not client:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cliente no encontrado")
-
-    if "service_id" in update_data:
-        service = await session.get(Service, update_data["service_id"])
-        if not service:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Servicio no encontrado")
-
-    for field, value in update_data.items():
-        setattr(reservation, field, value)
-
     try:
-        await session.commit()
-        await session.refresh(reservation)
-        return reservation
-    except IntegrityError:
-        await session.rollback()
+        return await actualizar_reserva(session, id, update_data)
+    except ReservationNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reserva no encontrada")
+    except ServiceNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Servicio no encontrado")
+    except ClientNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cliente no encontrado")
+    except ReservationConflictError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Conflicto: el horario seleccionado ya está ocupado",
@@ -143,15 +108,10 @@ async def update_reservation_status(
     _admin: User = Depends(get_current_admin),
 ):
     """Actualiza únicamente el status de una reserva. Solo administradores."""
-    result = await session.scalars(select(Reservation).where(Reservation.id == id))
-    reservation = result.first()
-    if not reservation:
+    try:
+        return await actualizar_estado_reserva(session, id, status_in.status)
+    except ReservationNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reserva no encontrada")
-
-    reservation.status = status_in.status
-    await session.commit()
-    await session.refresh(reservation)
-    return reservation
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -161,10 +121,7 @@ async def delete_reservation(
     _admin: User = Depends(get_current_admin),
 ):
     """Elimina una reserva por su id. Solo administradores."""
-    result = await session.scalars(select(Reservation).where(Reservation.id == id))
-    reservation = result.first()
-    if not reservation:
+    try:
+        await eliminar_reserva(session, id)
+    except ReservationNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reserva no encontrada")
-
-    await session.delete(reservation)
-    await session.commit()

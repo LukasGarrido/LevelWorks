@@ -3,12 +3,12 @@ app/services/auth_service.py
 Lógica de negocio para autenticación.
 """
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
 from app.core.security import verify_password
 from app.core.jwt import create_access_token
+from app.services.user_service import get_user_by_email
 
 
 async def authenticate_user(db: AsyncSession, email: str, password: str) -> User | None:
@@ -16,8 +16,7 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> User
     Busca al usuario por email y verifica la contraseña.
     Devuelve el User si las credenciales son válidas, None si no.
     """
-    result = await db.scalars(select(User).where(User.email == email))
-    user = result.first()
+    user = await get_user_by_email(db, email)
 
     if not user:
         return None
