@@ -1,6 +1,6 @@
 # Level Works
 
-Sistema de gestión y reserva, optimizado para negocios de autolavado. Desarrollado bajo una **arquitectura desacoplada**: un backend API-first construido con FastAPI y un frontend independiente construido con Astro (sin frameworks de UI), comunicados vía REST/JSON.
+Sistema de gestión y reserva, optimizado para negocios de autolavado. Desarrollado bajo una **arquitectura desacoplada**: un backend API-first construido con FastAPI y un frontend independiente construido con Astro, comunicados vía REST/JSON.
 
 ---
 
@@ -11,30 +11,28 @@ Sistema de gestión y reserva, optimizado para negocios de autolavado. Desarroll
 | Tecnología | Versión | Breve Descripción |
 | :--- | :--- | :--- |
 | **FastAPI** | 0.110+ (Python 3.12) | Framework backend asíncrono de alto rendimiento, expuesto como API JSON pura bajo `/api/v1`. |
-| **SQLAlchemy** | 2.0+ | ORM asíncrono para la gestión y modelado relacional de datos. |
-| **PostgreSQL** | 16 | Base de datos relacional principal para entornos de producción. |
-| **Pydantic** | 2.x | Contratos de entrada/salida tipados (schemas) para cada endpoint. |
-| **python-jose / PyJWT** | — | Emisión y validación de tokens JWT para autenticación de la API. |
-| **SQLAdmin** | 0.17+ | Panel de administración integrado (SSR interno, no forma parte del frontend público). |
-| **fastapi-storages** | 0.3+ | Almacenamiento y gestión nativa de archivos para SQLAlchemy y SQLAdmin. |
-| **Pillow** | 10.0+ | Procesamiento de imágenes (requerido por fastapi-storages ImageType). |
-| **Passlib & Bcrypt** | 1.7+ / 4.0+ | Hashing seguro de contraseñas. |
+| **SQLAlchemy** | 2.0+ | ORM asíncrono (`asyncpg`) para la gestión y modelado relacional de datos. |
+| **PostgreSQL** | 16 | Base de datos relacional principal para entornos de producción y desarrollo. |
+| **Pydantic** | 2.x | Contratos de entrada/salida tipados (schemas) para cada endpoint de la API. |
+| **PyJWT & Passlib / Bcrypt** | — | Autenticación basada en JWT y hashing seguro de contraseñas. |
+| **SQLAdmin** | 0.17+ | Panel de administración integrado (SSR interno para gestión de datos, desacoplado del frontend). |
+| **fastapi-storages & Pillow** | 0.3+ / 10.0+ | Almacenamiento y gestión de imágenes para SQLAdmin. |
 
 ### Frontend
 
 | Tecnología | Versión | Breve Descripción |
 | :--- | :--- | :--- |
-| **Astro** | 7.x | Framework frontend, build estático puro (`output: 'static'`). Sin framework de UI ni islands — interactividad con `<script>` module nativo. |
-| **Tailwind CSS** | 4.x | Framework CSS utility-first, integrado vía `@tailwindcss/vite` (sin el integration clásico de v3). |
+| **Astro** | 5.x / 7.x | Framework frontend estático (`output: 'static'`). Despliegue de alto rendimiento servido con Nginx. |
+| **Tailwind CSS** | 4.x | Framework CSS utility-first, integrado mediante `@tailwindcss/vite`. |
 | **tw-animate-css** | 1.x | Utilidades de animación compatibles con Tailwind v4. |
-| **TypeScript** | strict | Tipado del cliente API (`lib/api.ts`, `lib/types.ts`) y configuración del proyecto. |
+| **TypeScript** | strict | Tipado del cliente API (`lib/api.ts`, `lib/types.ts`) e interfaces del sistema. |
 
 ### Infraestructura
 
 | Tecnología | Versión | Breve Descripción |
 | :--- | :--- | :--- |
-| **Docker & Docker Compose** | v2+ | Contenedorización y orquestación de backend, frontend y base de datos como servicios independientes. Sin necesidad de instalar Node ni Python en la máquina local. |
-| **nginx** | alpine | Sirve el build estático de Astro en producción. |
+| **Docker & Docker Compose** | v2+ | Contenedorización y orquestación de backend, frontend y base de datos con perfiles para producción y desarrollo (`--profile dev`). |
+| **nginx** | alpine | Servidor web ultraligero que sirve el build estático de Astro en producción. |
 
 ---
 
@@ -51,111 +49,124 @@ level-works/
 │
 ├── backend/
 │   ├── docker/
-│   │   └── Dockerfile
+│   │   ├── Dockerfile                  # Imagen de producción (Uvicorn asíncrono)
+│   │   └── Dockerfile.dev              # Imagen de desarrollo (Uvicorn --reload)
 │   ├── requirements.txt
-│   ├── create_admin.py
-│   ├── DockerCMD.md
+│   ├── create_admin.py                 # Script CLI para inicializar superusuario admin
 │   │
 │   └── app/
 │       ├── __init__.py
-│       ├── main.py                     # FastAPI(), lifespan, CORS, SQLAdmin, incluye api/v1
-│       ├── auth.py                     # AdminAuth (backend de login de SQLAdmin)
-│       ├── config.py                   # pydantic-settings, settings_proxy, CORS_ORIGINS
+│       ├── main.py                     # FastAPI app, CORS, SQLAdmin views, static mount /img
+│       ├── auth.py                     # Backend de autenticación para SQLAdmin
+│       ├── config.py                   # Pydantic Settings (variables de entorno)
 │       │
 │       ├── core/
-│       │   ├── security.py             # hash_password, verify_password
-│       │   ├── jwt.py                  # create_access_token, decode_token
-│       │   ├── storage.py              # FileSystemStorage, FileType/ImageType
+│       │   ├── security.py             # Hashing y verificación de contraseñas
+│       │   ├── jwt.py                  # Generación y decodificación de JWT
+│       │   ├── storage.py              # Gestión de almacenamiento local de imágenes
 │       │   └── db/
-│       │       └── database.py         # engine async, sessionmaker, get_db, init_db, Base
+│       │       └── database.py         # Motor async SQLAlchemy, Session local, init_db
 │       │
-│       ├── models/                     # Tablas SQLAlchemy
+│       ├── models/                     # Modelos ORM (Tablas PostgreSQL)
 │       │   ├── user.py
 │       │   ├── client.py
 │       │   ├── service.py
 │       │   └── reservation.py
 │       │
-│       ├── schemas/                    # Contratos Pydantic de la API
+│       ├── schemas/                    # DTOs y validación Pydantic
 │       │   ├── auth.py
 │       │   ├── user.py
 │       │   ├── client.py
 │       │   ├── service.py
 │       │   └── reservation.py
 │       │
-│       ├── services/                   # Lógica de negocio reutilizable (aislada de HTTP)
+│       ├── services/                   # Capa de lógica de negocio aislada
 │       │   ├── auth_service.py
-│       │   ├── reservation_service.py
 │       │   ├── catalog_service.py
+│       │   ├── reservation_service.py
 │       │   └── user_service.py
 │       │
-│       ├── api/                        # Endpoints HTTP, organizados por dominio
-│       │   ├── deps.py                 # get_current_user, require_role, paginación común
-│       │   └── v1/
-│       │       ├── __init__.py         # router principal, prefix="/api/v1"
+│       ├── api/                        # Controladores y rutas HTTP
+│       │   ├── deps.py                 # Inyección de dependencias (DB Session, Admin Auth)
+│       │   └── v1/                     # API versionada (`/api/v1`)
+│       │       ├── __init__.py         # Router principal v1
 │       │       ├── auth.py
 │       │       ├── users.py
 │       │       ├── clients.py
 │       │       ├── services.py
 │       │       └── reservations.py
 │       │
-│       └── img/                        # Fotos de servicios subidas vía SQLAdmin
+│       └── img/                        # Almacenamiento local de fotografías de servicios
 │
 └── frontend/
     ├── docker/
-    │   ├── Dockerfile                  # Multi-stage: build estático + nginx (producción)
-    │   └── Dockerfile.dev              # Node + astro dev con hot-reload (desarrollo)
+    │   ├── Dockerfile                  # Build multi-stage + nginx (Producción)
+    │   └── Dockerfile.dev              # Node 22 + astro dev con hot-reload (Desarrollo)
     ├── astro.config.mjs
     ├── package.json
     ├── package-lock.json
     ├── tsconfig.json
-    ├── .vscode/
     │
     ├── public/
     │   └── favicon.svg
     │
     └── src/
-        ├── env.d.ts
+        ├── assets/                     # Recursos gráficos vectoriales (SVGs)
         ├── styles/
-        │   └── global.css              # entrada de Tailwind v4 (@import "tailwindcss")
+        │   └── global.css              # Directivas Tailwind CSS v4 y estilos globales
         │
         ├── lib/
-        │   ├── api.ts                  # cliente fetch tipado hacia FastAPI
-        │   └── types.ts                # Service, Slot, ReservationPayload, ReservationResponse
+        │   ├── api.ts                  # Cliente HTTP tipado para interactuar con `/api/v1`
+        │   └── types.ts                # Tipos e interfaces TypeScript del frontend
         │
         ├── layouts/
-        │   └── Base.astro
+        │   └── Layout.astro            # Layout principal con Meta tags, Header y Footer
         │
         ├── components/
-        │   ├── Navbar.astro
-        │   ├── Footer.astro
-        │   ├── ServiceCard.astro
-        │   └── reservation/             # Wizard de reserva, orquestado con CustomEvents
-        │       ├── ServiceSelect.astro
-        │       ├── DatePicker.astro
-        │       ├── TimeSlots.astro
-        │       └── ReservationForm.astro
+        │   ├── layout/                 # Estructura general de página
+        │   │   ├── Header.astro        # Barra de navegación superior dinámica
+        │   │   └── Footer.astro        # Pie de página y modales informativos
+        │   │
+        │   ├── ui/                     # Componentes atómicos de interfaz reutilizables
+        │   │   ├── Button.astro        # Botones estandarizados
+        │   │   ├── Modal.astro         # Diálogos modales
+        │   │   └── ServiceCard.astro   # Tarjetas de visualización de servicios
+        │   │
+        │   └── sections/               # Secciones modulares de la Landing Page
+        │       ├── Hero.astro          # Sección principal / Presentación
+        │       ├── HowItWorks.astro    # Guía paso a paso del servicio
+        │       ├── Services.astro      # Catálogo interactivo de servicios
+        │       ├── Features.astro      # Características clave / Ventajas
+        │       ├── CallToAction.astro  # Banner de llamado a la acción
+        │       └── BookingWizard.astro # Wizard de agendamiento en 3 pasos
         │
         └── pages/
-            ├── index.astro
-            ├── servicios.astro
-            └── reservas.astro
+            ├── index.astro             # Experiencia Landing Page Single Page
+            └── 404.astro               # Página de error 404 personalizada
 ```
-
-> **Qué cambió respecto a la versión anterior:** `app/routes/views.py` y `app/templates/` (Jinja2 + HTMX) fueron eliminados. El frontend ahora es un proyecto Astro independiente, **sin React ni ningún framework de UI** — toda la interactividad del flujo de reserva se resuelve con `<script>` nativo dentro de cada componente `.astro`, comunicándose entre sí vía `CustomEvent` en el `document`. El backend expone únicamente JSON bajo `/api/v1`. SQLAdmin se mantiene como panel administrativo interno (SSR, pero fuera del frontend público).
 
 ---
 
 ## Arquitectura del Frontend (Astro)
 
-Sin framework de UI, el estado del wizard de reserva se comparte entre componentes mediante eventos del DOM, no props ni stores:
+El frontend está diseñado bajo un enfoque de **Landing Page dinámica interactiva (SPA Experience)** construida con Astro. Toda la interactividad client-side se gestiona mediante Scripts nativos TypeScript embebidos de manera limpia en los componentes:
 
+### Flujo del Wizard de Reserva (`BookingWizard.astro`)
+
+El flujo completo de reservas está encapsulado en un wizard modular de 3 pasos dentro de `BookingWizard.astro`:
+
+```text
+[ Paso 1: Selección de Servicio ] ──▶ [ Paso 2: Selección de Fecha y Hora ] ──▶ [ Paso 3: Datos del Cliente ] ──▶ [ Confirmación Modal ]
+       GET /api/v1/services                 GET /api/v1/reservations/availability           POST /api/v1/reservations
 ```
-ServiceSelect ──(service:selected)──▶ DatePicker ──(date:selected)──▶ TimeSlots ──(slot:selected)──▶ ReservationForm
-```
 
-Cada componente escucha el evento del paso anterior, hace su propio fetch a la API vía `lib/api.ts`, y dispara su propio evento al completarse. Esto evita acoplar componentes entre sí y mantiene cada `.astro` autocontenido (markup + estilos + su propio script).
+1. **Paso 1 (Servicio):** Obtiene dinámicamente el catálogo de servicios desde `GET /api/v1/services` a través de `lib/api.ts`.
+2. **Paso 2 (Fecha y Horario):** Consulta los bloques horarios disponibles llamando a la API de disponibilidad en tiempo real.
+3. **Paso 3 (Datos del Cliente):** Recopila la información personal y del vehículo, enviando la solicitud a `POST /api/v1/reservations`. Al completarse con éxito, se despliega una ventana modal de confirmación sin recargar la página.
 
-`output: 'static'` en `astro.config.mjs` — todo se compila a HTML/CSS/JS estático en build time; no hay SSR en producción, el servidor (nginx) solo sirve archivos.
+### Generación y Renderizado
+* **Output:** `output: 'static'` en `astro.config.mjs`. En producción, Astro genera archivos HTML/CSS/JS optimizados servidos eficientemente por **Nginx**.
+* **Integración API:** Todas las interacciones dinámicas en el navegador se conectan al backend FastAPI mediante `lib/api.ts`.
 
 ---
 
@@ -163,7 +174,7 @@ Cada componente escucha el evento del paso anterior, hace su propio fetch a la A
 
 ### Prerrequisitos
 
-* [Docker](https://www.docker.com/) y [Docker Compose](https://docs.docker.com/compose/) instalados. **No se necesita Node.js ni Python instalados localmente** — todo corre dentro de contenedores.
+* [Docker](https://www.docker.com/) y [Docker Compose](https://docs.docker.com/compose/) instalados. **No requiere Node.js ni Python instalados en el host**.
 
 ---
 
@@ -173,6 +184,7 @@ Cada componente escucha el evento del paso anterior, hace su propio fetch a la A
 cp .env.example .env
 ```
 
+Configuración predeterminada sugerida en `.env`:
 ```env
 # Aplicación
 APP_NAME=Level Works
@@ -181,7 +193,7 @@ SECRET_KEY=password
 
 # Backend (API)
 PORT=8000
-CORS_ORIGINS=http://localhost:4323
+CORS_ORIGINS=http://localhost:4323,http://localhost:4321
 
 # Frontend (Astro)
 FRONTEND_PORT=4323
@@ -193,99 +205,83 @@ DB_USER=postgres
 DB_PASSWORD=123
 DB_PORT=5432
 
-# Información de Contacto (Modal / Base HTML)
-CONTACT_EMAIL=contacto@gmail
+# Información de Contacto
+CONTACT_EMAIL=contacto@levelworks.cl
 CONTACT_PHONE=+56912345678
-INSTAGRAM_HANDLE=@xxxxxxxx
+INSTAGRAM_HANDLE=@levelworks
 ```
 
 ---
 
-### Levantar todo el stack (producción)
+### Entorno de Producción (Stack Completo)
+
+Para compilar e inicie todos los servicios optimizados para producción:
 
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
-Levanta tres contenedores:
+Servicios desplegados:
 * `db` — PostgreSQL 16
-* `api` — FastAPI en Uvicorn (`http://localhost:8000`)
-* `frontend` — Astro compilado a estático, servido por nginx (`http://localhost:4323`)
+* `api` — Backend FastAPI expuesto en `http://localhost:8000`
+* `frontend` — Build estático de Astro servido por Nginx en `http://localhost:4323`
 
-**Crear el usuario Administrador:**
+**Crear superusuario Administrador:**
 ```bash
 docker exec -it levelworks-api-1 python create_admin.py
 ```
 
-**Acceder:**
-* **Sitio Web / Reservas (Astro):** [http://localhost:4323](http://localhost:4323)
-* **API (FastAPI):** [http://localhost:8000/api/v1](http://localhost:8000/api/v1)
-* **Docs interactivas (Swagger):** [http://localhost:8000/docs](http://localhost:8000/docs)
-* **Panel Administrativo:** [http://localhost:8000/admin](http://localhost:8000/admin)
-
-> El servicio `frontend` usa build multi-stage: compila con Node y descarta todo el entorno de Node en la imagen final, quedándose solo con los archivos estáticos servidos por nginx. Por eso **cualquier cambio en `frontend/src/` requiere rebuild** (`docker-compose up --build frontend`) — no hay hot-reload en este modo.
-
 ---
 
-### Desarrollo del frontend con hot-reload
+### Entorno de Desarrollo (Hot-Reload)
 
-Para iterar sobre componentes de Astro sin rebuildear en cada cambio, existe un servicio separado (`frontend-dev`) que corre `astro dev` con el código montado como volumen:
+Para desarrollar con recarga en vivo en frontend y backend, utilice el perfil `dev`:
 
 ```bash
-docker-compose up --build frontend-dev
+docker compose --profile dev up --build
 ```
 
-Esto expone Astro en modo desarrollo en `http://localhost:4323` con recarga automática al guardar cualquier archivo en `src/`. No reemplaza al servicio `frontend` (producción) — se usan por separado, según lo que estés haciendo.
+Servicios en modo desarrollo:
+* `api-dev` — FastAPI con `--reload` habilitado en `http://localhost:8001`
+* `frontend-dev` — Astro Dev Server con hot-reload en `http://localhost:4323`
 
 ---
 
-## Cómo se Usa
+## Panel Administrativo y API
 
-### 1. Reservar una Cita (Experiencia del Cliente)
+* **Sitio Web Principal:** [http://localhost:4323](http://localhost:4323)
+* **Documentación Interactiva Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
+* **Documentación ReDoc:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
+* **Panel de Administración SQLAdmin:** [http://localhost:8000/admin](http://localhost:8000/admin)
 
-1. Ingresa a `http://localhost:4323`.
-2. **Selecciona un Servicio:** `ServiceSelect` obtiene el catálogo desde `GET /api/v1/services`.
-3. **Selecciona una Fecha:** `DatePicker` se habilita tras elegir servicio; al elegir fecha dispara `date:selected`.
-4. **Elige un Horario:** `TimeSlots` consulta `GET /api/v1/availability` y muestra los bloques disponibles.
-5. **Completa los Datos:** `ReservationForm` se habilita tras elegir horario — Nombre, Correo, Teléfono, Notas.
-6. **Confirmar Reserva:** Envía `POST /api/v1/reservations` y muestra la confirmación sin recarga de página.
+### Resumen de Endpoints API (`/api/v1`)
 
-### 2. Gestión Administrativa (Panel Admin)
-
-1. Accede a `http://localhost:8000/admin`.
-2. Inicia sesión con tus credenciales de administrador creadas con `create_admin.py`.
-3. **Módulos Disponibles:**
-   * **Servicios:** Crea, edita o elimina servicios. Puedes subir imágenes asociadas que se almacenarán en `/app/img/`.
-   * **Clientes:** Visualiza el listado de clientes registrados automáticamente al reservar.
-   * **Reservas:** Revisa todas las citas agendadas, filtra por estado y actualiza su estatus (*pendiente*, *confirmada*, *en_progreso*, *completada*, *cancelada*).
-   * **Usuarios:** Gestiona usuarios internos del sistema, asignando roles y permisos específicos.
-
----
-
-## API (`/api/v1`)
-
-| Recurso | Endpoints principales |
-| :--- | :--- |
-| **Auth** | `POST /auth/login`, `POST /auth/refresh` |
-| **Services** | `GET /services`, `GET /services/{id}` |
-| **Reservations** | `POST /reservations`, `GET /availability`, `PATCH /reservations/{id}/status` |
-| **Clients** | `GET /clients`, `GET /clients/{id}` |
-| **Users** | `GET /users`, `POST /users`, `PATCH /users/{id}` |
-
-Documentación completa e interactiva disponible en `/docs` (Swagger UI) y `/redoc`.
+| Módulo | Endpoint | Método | Descripción | Acceso |
+| :--- | :--- | :--- | :--- | :--- |
+| **Auth** | `/auth/login` | `POST` | Autenticación y obtención de token JWT | Público |
+| **Services** | `/services/` | `GET` | Lista el catálogo de servicios activos | Público |
+| **Services** | `/services/` | `POST` | Crea un nuevo servicio | Admin |
+| **Services** | `/services/{id}` | `PUT` / `DELETE` | Modifica o elimina un servicio | Admin |
+| **Reservations** | `/reservations/` | `POST` | Crea una nueva reserva | Público |
+| **Reservations** | `/reservations/` | `GET` | Lista todas las reservas agendadas | Admin |
+| **Reservations** | `/reservations/{id}/status` | `PATCH` | Actualiza el estado de una reserva | Admin |
+| **Clients** | `/clients/` | `GET` | Lista clientes registrados | Admin |
+| **Users** | `/users/` | `GET` / `POST` | Gestión de usuarios del sistema | Admin |
 
 ---
 
-## Comandos de Base de Datos (PostgreSQL)
+## Comandos de Gestión PostgreSQL
 
-| Comando | Descripción | Ejemplo de uso |
-| :--- | :--- | :--- |
-| `\dt` | Lista todas las **tablas** disponibles en la base de datos actual. | `\dt` |
-| `\d <tabla>` | Muestra la **estructura detallada** de una tabla (columnas, tipos de datos, llaves primarias, índices). | `\d services` |
-| `\l` | Lista todas las **bases de datos** creadas en el servidor de Postgres. | `\l` |
-| `\du` | Lista todos los **usuarios / roles** creados y sus respectivos permisos. | `\du` |
-| `\df` | Lista todas las **funciones** o procedimientos almacenados. | `\df` |
-| `\dn` | Lista los **esquemas** de la base de datos (por defecto verás `public`). | `\dn` |
+Para interactuar con la base de datos dentro del contenedor:
+
+```bash
+docker exec -it levelworks-db-1 psql -U postgres -d levelworks_db
+```
+
+Comandos útiles dentro de `psql`:
+* `\dt` — Lista todas las tablas.
+* `\d reservations` — Detalle de columnas e índices de una tabla.
+* `\l` — Lista las bases de datos en el servidor.
 
 ---
 
