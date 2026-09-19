@@ -1,26 +1,43 @@
 ---
-
+// src/components/sections/CallToAction.astro
+import Button from "../ui/Button.astro";
 ---
 
-<section class="section bg-background fade-on-scroll">
-    <div class="wrapper max-w-4xl text-center">
+<section class="section bg-background fade-on-scroll relative overflow-hidden">
+    <div class="wrapper max-w-4xl text-center relative z-10">
         <div
-            class="rounded-3xl border border-border bg-card p-10 sm:p-14 shadow-sm"
+            class="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-b from-card/90 to-card/50 p-10 backdrop-blur-md shadow-2xl shadow-primary/5 sm:p-16"
         >
-            <h2
-                class="font-display text-3xl font-bold text-foreground sm:text-4xl"
+            <!-- Resplandor sutil de fondo -->
+            <div
+                class="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-primary/10 blur-3xl pointer-events-none"
             >
-                Tu próximo lavado empieza aquí
-            </h2>
-            <p class="mt-3 text-muted-foreground">
-                Reserva en línea en segundos y evita las molestas filas.
-            </p>
-            <a
-                href="#reservar"
-                class="mt-8 inline-flex rounded-full bg-primary px-8 py-3.5 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            </div>
+            <div
+                class="absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-primary/5 blur-3xl pointer-events-none"
             >
-                Reservar ahora
-            </a>
+            </div>
+
+            <div class="relative z-10 flex flex-col items-center">
+                <h2
+                    class="mt-6 font-display text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl md:text-5xl"
+                >
+                    Tu próximo lavado empieza aquí
+                </h2>
+
+                <p
+                    class="mt-4 max-w-lg text-sm text-muted-foreground sm:text-base leading-relaxed"
+                >
+                    Reserva en línea en segundos, elige tu horario ideal y evita
+                    las molestas filas de espera.
+                </p>
+
+                <div class="mt-8">
+                    <Button href="#reservar" variant="primary" size="lg">
+                        <span>Reservar con nosotros</span>
+                    </Button>
+                </div>
+            </div>
         </div>
     </div>
 </section>

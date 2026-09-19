@@ -1,237 +1,407 @@
 ---
-
+// src/components/sections/BookingWizard.astro
+import Button from "../ui/Button.astro";
+import Modal from "../ui/Modal.astro";
 ---
 
-<section id="reservar" class="section bg-background fade-on-scroll">
-    <div class="wrapper max-w-3xl">
-        <div class="section-head text-center">
+<section
+    id="reservar"
+    class="section bg-background fade-on-scroll min-h-[80vh] flex flex-col justify-center"
+>
+    <div class="wrapper max-w-4xl w-full">
+        <!-- Encabezado -->
+        <div class="mb-8">
             <h2
                 class="font-display text-3xl font-bold text-foreground sm:text-4xl"
             >
                 Reserva tu cita
             </h2>
+            <p class="mt-1 text-sm text-muted-foreground">
+                Cuatro pasos simples y listo. Te confirmamos por email.
+            </p>
         </div>
 
+        <!-- Indicador de Pasos (Stepper) -->
         <div
-            class="space-y-8 rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-sm"
+            class="mb-10 grid grid-cols-4 gap-2 border-b border-border pb-4 text-xs font-medium text-muted-foreground"
         >
-            <!-- Paso 1: Servicio -->
-            <div id="step-service">
-                <h3
-                    class="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                >
-                    1. Selecciona un servicio
-                </h3>
-                <div id="wizard-service-grid" class="grid gap-3 sm:grid-cols-2">
-                    <p class="text-sm text-muted-foreground">
-                        Cargando servicios disponibles...
-                    </p>
-                </div>
-            </div>
-
-            <!-- Paso 2: Fecha y hora -->
             <div
-                id="step-datetime"
-                class="opacity-40 pointer-events-none transition-opacity duration-200 border-t border-border pt-6"
+                id="step-indicator-1"
+                class="step-tab text-primary font-semibold border-b-2 border-primary pb-2"
             >
-                <h3
-                    class="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                1. Servicio
+            </div>
+            <div id="step-indicator-2" class="step-tab pb-2">
+                2. Fecha y hora
+            </div>
+            <div id="step-indicator-3" class="step-tab pb-2">3. Tus datos</div>
+            <div id="step-indicator-4" class="step-tab pb-2">
+                4. Confirmación
+            </div>
+        </div>
+
+        <!-- PASO 1: Selección múltiple de servicios -->
+        <div id="wizard-step-1" class="wizard-step space-y-6">
+            <div id="wizard-service-grid" class="grid gap-4 sm:grid-cols-2">
+                <p
+                    class="text-sm text-muted-foreground col-span-2 text-center py-10"
                 >
-                    2. Fecha y hora
-                </h3>
-                <div class="flex flex-wrap gap-4">
+                    Cargando servicios disponibles...
+                </p>
+            </div>
+        </div>
+
+        <!-- PASO 2: Selección de Fecha y Hora -->
+        <div id="wizard-step-2" class="wizard-step hidden space-y-6">
+            <div class="grid gap-6 md:grid-cols-12">
+                <!-- Calendario simplificado / Selector de fecha -->
+                <div
+                    class="md:col-span-5 rounded-2xl border border-border bg-card p-4 text-center"
+                >
+                    <label
+                        for="wizard-date"
+                        class="block text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider"
+                        >Selecciona la fecha</label
+                    >
                     <input
                         type="date"
                         id="wizard-date"
-                        class="rounded-xl border border-border bg-background px-4 py-2.5 text-foreground focus:border-primary focus:outline-none"
+                        class="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:border-primary focus:outline-none"
                     />
-                    <input
-                        type="time"
-                        id="wizard-time"
-                        class="rounded-xl border border-border bg-background px-4 py-2.5 text-foreground focus:border-primary focus:outline-none"
-                    />
+                </div>
+
+                <!-- Matriz de horarios -->
+                <div
+                    class="md:col-span-7 rounded-2xl border border-border bg-card p-5"
+                >
+                    <h4
+                        id="slots-header"
+                        class="text-xs font-semibold text-muted-foreground mb-4 uppercase tracking-wider"
+                    >
+                        Horarios disponibles
+                    </h4>
+                    <div id="time-slots-grid" class="grid grid-cols-3 gap-2.5">
+                        <!-- Tramos de hora generados dinámicamente -->
+                    </div>
+                    <p class="mt-4 text-[11px] text-muted-foreground">
+                        Los horarios atenuados ya están reservados.
+                    </p>
                 </div>
             </div>
+        </div>
 
-            <!-- Paso 3: Datos del cliente -->
-            <div
-                id="step-details"
-                class="opacity-40 pointer-events-none transition-opacity duration-200 border-t border-border pt-6"
+        <!-- PASO 3: Formulario de datos -->
+        <div id="wizard-step-3" class="wizard-step hidden">
+            <form
+                id="wizard-form"
+                class="rounded-2xl border border-border bg-card p-6 sm:p-8 space-y-4 max-w-2xl mx-auto"
             >
-                <h3
-                    class="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                >
-                    3. Tus datos
-                </h3>
-                <form id="wizard-form" class="space-y-4">
-                    <input
-                        name="name"
-                        type="text"
-                        placeholder="Nombre completo"
-                        required
-                        class="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-                    />
-                    <input
-                        name="email"
-                        type="email"
-                        placeholder="Correo electrónico"
-                        required
-                        class="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-                    />
-                    <input
-                        name="phone"
-                        type="tel"
-                        placeholder="Teléfono"
-                        required
-                        class="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-                    />
-                    <input
-                        name="vehicle"
-                        type="text"
-                        placeholder="Modelo de vehículo (opcional)"
-                        class="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-                    />
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label
+                            class="block text-xs font-medium text-muted-foreground mb-1"
+                            >Nombre completo</label
+                        >
+                        <input
+                            name="name"
+                            type="text"
+                            required
+                            class="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-medium text-muted-foreground mb-1"
+                            >Email</label
+                        >
+                        <input
+                            name="email"
+                            type="email"
+                            required
+                            class="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                        />
+                    </div>
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label
+                            class="block text-xs font-medium text-muted-foreground mb-1"
+                            >Teléfono</label
+                        >
+                        <input
+                            name="phone"
+                            type="tel"
+                            required
+                            class="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-medium text-muted-foreground mb-1"
+                            >Vehículo (opcional)</label
+                        >
+                        <input
+                            name="vehicle"
+                            type="text"
+                            placeholder="Ej. Mazda 3 - Blanco"
+                            class="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <label
+                        class="block text-xs font-medium text-muted-foreground mb-1"
+                        >Notas (opcional)</label
+                    >
                     <textarea
                         name="notes"
-                        placeholder="Notas adicionales"
                         rows="3"
-                        class="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                        class="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                     ></textarea>
-
-                    <button
-                        type="submit"
-                        class="w-full rounded-full bg-primary py-3.5 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-                    >
-                        Confirmar reserva
-                    </button>
-                </form>
-
-                <div
-                    id="wizard-result"
-                    class="hidden mt-4 rounded-xl p-4 text-center text-sm font-medium"
-                >
                 </div>
+            </form>
+        </div>
+
+        <!-- Barra Inferior de Navegación y Resumen -->
+        <div
+            class="mt-8 flex items-center justify-between border-t border-border pt-4"
+        >
+            <button
+                id="btn-back"
+                type="button"
+                class="invisible text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+                &larr; Atrás
+            </button>
+
+            <div class="flex items-center gap-4">
+                <span
+                    id="summary-text"
+                    class="text-xs sm:text-sm font-medium text-muted-foreground"
+                ></span>
+                <Button id="btn-next" variant="primary" size="md">
+                    Continuar &rarr;
+                </Button>
             </div>
         </div>
     </div>
 </section>
 
+<Modal id="booking-modal" />
+
 <script>
     import { getServices, createReservation } from "../../lib/api";
     import type { Service } from "../../lib/types";
 
+    let currentStep = 1;
+    let selectedServices: Service[] = [];
+    let selectedDate = "";
+    let selectedTime = "";
+
     const serviceGrid = document.getElementById("wizard-service-grid")!;
-    const stepDatetime = document.getElementById("step-datetime")!;
-    const stepDetails = document.getElementById("step-details")!;
+    const timeSlotsGrid = document.getElementById("time-slots-grid")!;
     const dateInput = document.getElementById(
         "wizard-date",
     ) as HTMLInputElement;
-    const timeInput = document.getElementById(
-        "wizard-time",
-    ) as HTMLInputElement;
+    const btnNext = document.getElementById("btn-next") as HTMLButtonElement;
+    const btnBack = document.getElementById("btn-back") as HTMLButtonElement;
+    const summaryText = document.getElementById("summary-text")!;
     const form = document.getElementById("wizard-form") as HTMLFormElement;
-    const result = document.getElementById("wizard-result")!;
+    const modal = document.getElementById("booking-modal") as HTMLDialogElement;
+    const modalContent = document.getElementById("booking-modal-content")!;
 
-    let selectedServiceId: number | null = null;
+    const hours = [
+        "09:00",
+        "09:45",
+        "10:30",
+        "11:15",
+        "12:00",
+        "14:00",
+        "14:45",
+        "15:30",
+        "16:15",
+        "17:00",
+        "17:45",
+    ];
 
-    function renderServiceCard(service: Service) {
-        const el = document.createElement("article");
-        el.className =
-            "rounded-xl border border-border bg-background p-4 cursor-pointer transition hover:border-primary/50";
-        el.dataset.serviceId = String(service.id);
-        el.innerHTML = `
-      <h4 class="font-display font-semibold text-foreground">${service.name}</h4>
-      <div class="mt-2 flex items-center justify-between">
-        <span class="font-bold text-primary">$${service.price.toLocaleString("es-CL")}</span>
-        <span class="text-xs text-muted-foreground">${service.duration_minutes} min</span>
-      </div>
-    `;
-
-        el.addEventListener("click", () => {
-            serviceGrid.querySelectorAll("[data-service-id]").forEach((n) => {
-                n.classList.remove(
-                    "border-primary",
-                    "bg-primary/5",
-                    "ring-1",
-                    "ring-primary",
-                );
-                n.classList.add("border-border");
-            });
-            el.classList.add(
-                "border-primary",
-                "bg-primary/5",
-                "ring-1",
-                "ring-primary",
-            );
-            el.classList.remove("border-border");
-            selectedServiceId = service.id;
-            stepDatetime.classList.remove("opacity-40", "pointer-events-none");
-        });
-
-        return el;
-    }
-
+    // Cargar servicios
     getServices()
         .then((services) => {
             serviceGrid.innerHTML = "";
-            services.forEach((s) =>
-                serviceGrid.appendChild(renderServiceCard(s)),
-            );
+            services.forEach((s) => {
+                const card = document.createElement("div");
+                card.className =
+                    "cursor-pointer rounded-2xl border border-border bg-card p-5 transition hover:border-primary/50 flex justify-between items-center";
+                card.innerHTML = `
+          <div>
+            <h4 class="font-display font-semibold text-foreground">${s.name}</h4>
+            <p class="text-xs text-muted-foreground">${s.duration_minutes} min</p>
+          </div>
+          <span class="font-bold text-primary">$${s.price.toLocaleString("es-CL")}</span>
+        `;
+                card.addEventListener("click", () => {
+                    const idx = selectedServices.findIndex(
+                        (item) => item.id === s.id,
+                    );
+                    if (idx >= 0) {
+                        selectedServices.splice(idx, 1);
+                        card.classList.remove(
+                            "border-primary",
+                            "bg-primary/10",
+                            "ring-2",
+                            "ring-primary",
+                        );
+                    } else {
+                        selectedServices.push(s);
+                        card.classList.add(
+                            "border-primary",
+                            "bg-primary/10",
+                            "ring-2",
+                            "ring-primary",
+                        );
+                    }
+                    updateSummary();
+                });
+                serviceGrid.appendChild(card);
+            });
         })
         .catch(() => {
-            serviceGrid.innerHTML = `<p class="text-sm text-destructive">No se pudieron cargar los servicios.</p>`;
+            serviceGrid.innerHTML = `<p class="text-sm text-destructive col-span-2">No se pudieron cargar los servicios.</p>`;
         });
 
-    function checkDatetimeReady() {
-        if (dateInput.value && timeInput.value && selectedServiceId) {
-            stepDetails.classList.remove("opacity-40", "pointer-events-none");
+    function renderTimeSlots() {
+        timeSlotsGrid.innerHTML = "";
+        hours.forEach((h) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className =
+                "rounded-xl border border-border bg-background py-2 text-xs font-medium text-foreground hover:border-primary transition";
+            btn.textContent = h;
+            btn.addEventListener("click", () => {
+                timeSlotsGrid
+                    .querySelectorAll("button")
+                    .forEach((b) =>
+                        b.classList.remove(
+                            "border-primary",
+                            "bg-primary/10",
+                            "text-primary",
+                        ),
+                    );
+                btn.classList.add(
+                    "border-primary",
+                    "bg-primary/10",
+                    "text-primary",
+                );
+                selectedTime = h;
+                updateSummary();
+            });
+            timeSlotsGrid.appendChild(btn);
+        });
+    }
+
+    function updateSummary() {
+        const total = selectedServices.reduce(
+            (acc, curr) => acc + curr.price,
+            0,
+        );
+        if (selectedServices.length > 0) {
+            summaryText.textContent = `${selectedServices.length} servicio(s) · $${total.toLocaleString("es-CL")}`;
+        } else {
+            summaryText.textContent = "Selecciona al menos un servicio";
         }
     }
 
-    dateInput.addEventListener("change", checkDatetimeReady);
-    timeInput.addEventListener("change", checkDatetimeReady);
+    function goToStep(step: number) {
+        currentStep = step;
+        document.querySelectorAll(".wizard-step").forEach((el, idx) => {
+            el.classList.toggle("hidden", idx + 1 !== currentStep);
+        });
 
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        if (!selectedServiceId || !dateInput.value || !timeInput.value) return;
+        document.querySelectorAll(".step-tab").forEach((el, idx) => {
+            if (idx + 1 === currentStep) {
+                el.className =
+                    "step-tab text-primary font-semibold border-b-2 border-primary pb-2";
+            } else if (idx + 1 < currentStep) {
+                el.className = "step-tab text-foreground font-medium pb-2";
+            } else {
+                el.className = "step-tab text-muted-foreground pb-2";
+            }
+        });
 
-        const formData = new FormData(form);
-        const scheduledAt = `${dateInput.value}T${timeInput.value}:00`;
+        btnBack.classList.toggle("invisible", currentStep === 1);
 
-        try {
-            const reservation = await createReservation({
-                client: {
-                    name: String(formData.get("name")),
-                    email: String(formData.get("email")),
-                    phone: String(formData.get("phone")),
-                },
-                service_id: selectedServiceId,
-                scheduled_at: scheduledAt,
-                vehicle: String(formData.get("vehicle") || "") || undefined,
-                notes: String(formData.get("notes") || "") || undefined,
-            });
-
-            form.classList.add("hidden");
-            result.classList.remove("hidden");
-            result.classList.add(
-                "border",
-                "border-primary/30",
-                "bg-primary/10",
-                "text-primary",
-            );
-            result.textContent = `¡Reserva confirmada! Código #${reservation.id}.`;
-        } catch (err) {
-            result.classList.remove("hidden");
-            result.classList.add(
-                "border",
-                "border-destructive/30",
-                "bg-destructive/10",
-                "text-destructive",
-            );
-            result.textContent =
-                err instanceof Error
-                    ? err.message
-                    : "No se pudo confirmar la reserva.";
+        if (currentStep === 3) {
+            btnNext.textContent = "Confirmar reserva";
+        } else {
+            btnNext.innerHTML = "Continuar &rarr;";
         }
+    }
+
+    dateInput.addEventListener("change", (e) => {
+        selectedDate = (e.target as HTMLInputElement).value;
+        updateSummary();
+    });
+
+    btnNext.addEventListener("click", async () => {
+        if (currentStep === 1) {
+            if (selectedServices.length === 0)
+                return alert("Selecciona al menos un servicio");
+            renderTimeSlots();
+            goToStep(2);
+        } else if (currentStep === 2) {
+            if (!selectedDate || !selectedTime)
+                return alert("Selecciona una fecha y hora válida");
+            goToStep(3);
+        } else if (currentStep === 3) {
+            if (!form.checkValidity()) return form.reportValidity();
+
+            const formData = new FormData(form);
+            const scheduledAt = `${selectedDate}T${selectedTime}:00`;
+
+            try {
+                const res = await createReservation({
+                    client: {
+                        name: String(formData.get("name")),
+                        email: String(formData.get("email")),
+                        phone: String(formData.get("phone")),
+                    },
+                    service_id: selectedServices[0].id,
+                    scheduled_at: scheduledAt,
+                    vehicle: String(formData.get("vehicle") || "") || undefined,
+                    notes: String(formData.get("notes") || "") || undefined,
+                });
+
+                modalContent.innerHTML = `
+          <div class="text-4xl text-primary mb-2">✨</div>
+          <h3 class="font-display text-xl font-bold">¡Reserva concretada!</h3>
+          <p class="text-xs text-muted-foreground">Hemos enviado la información a tu correo. Tu código es #${res.id}.</p>
+          <button id="close-modal" class="mt-4 w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">Aceptar</button>
+        `;
+                modal.showModal();
+                document
+                    .getElementById("close-modal")
+                    ?.addEventListener("click", () => {
+                        modal.close();
+                        window.location.reload();
+                    });
+            } catch (err) {
+                modalContent.innerHTML = `
+          <div class="text-4xl text-destructive mb-2">⚠️</div>
+          <h3 class="font-display text-xl font-bold">Error en la reserva</h3>
+          <p class="text-xs text-muted-foreground">${err instanceof Error ? err.message : "No se pudo concretar la reserva."}</p>
+          <button id="close-modal" class="mt-4 w-full rounded-xl bg-secondary py-2.5 text-sm font-semibold text-foreground">Cerrar</button>
+        `;
+                modal.showModal();
+                document
+                    .getElementById("close-modal")
+                    ?.addEventListener("click", () => modal.close());
+            }
+        }
+    });
+
+    btnBack.addEventListener("click", () => {
+        if (currentStep > 1) goToStep(currentStep - 1);
     });
 </script>

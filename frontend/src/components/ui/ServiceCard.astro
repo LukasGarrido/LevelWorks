@@ -1,4 +1,5 @@
 ---
+// src/components/ui/ServiceCard.astro
 import type { Service } from "../../lib/types";
 
 interface Props {
@@ -11,41 +12,61 @@ const { service, selected = false } = Astro.props;
 
 <article
     class:list={[
-        "rounded-2xl border p-5 transition-all duration-200 cursor-pointer bg-card",
+        "group relative overflow-hidden rounded-2xl border transition-all duration-200 cursor-pointer bg-card flex flex-col justify-between",
         selected
-            ? "border-primary bg-primary/5 ring-1 ring-primary"
-            : "border-border hover:border-primary/50",
+            ? "border-primary bg-primary/10 ring-2 ring-primary"
+            : "border-border/60 hover:border-primary/50",
     ]}
+    data-service-card
     data-service-id={service.id}
     data-service-name={service.name}
     data-service-price={service.price}
 >
     {
         service.photo && (
-            <img
-                src={service.photo}
-                alt={service.name}
-                class="mb-4 h-36 w-full rounded-xl object-cover"
-                loading="lazy"
-            />
+            <div class="h-44 w-full overflow-hidden bg-muted">
+                <img
+                    src={service.photo}
+                    alt={service.name}
+                    class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                />
+            </div>
         )
     }
-    <h3 class="font-display text-lg font-semibold text-foreground">
-        {service.name}
-    </h3>
-    {
-        service.description && (
-            <p class="mt-1 text-sm text-muted-foreground">
-                {service.description}
-            </p>
-        )
-    }
-    <div class="mt-4 flex items-center justify-between">
-        <span class="text-lg font-bold text-primary"
-            >${service.price.toLocaleString("es-CL")}</span
-        >
-        <span class="text-xs text-muted-foreground"
-            >{service.duration_minutes} min</span
-        >
+
+    <div class="p-5 flex-1 flex flex-col justify-between">
+        <div>
+            <div class="flex items-start justify-between gap-2">
+                <h3
+                    class="font-display text-base font-semibold text-foreground"
+                >
+                    {service.name}
+                </h3>
+                <span class="font-bold text-primary text-sm"
+                    >${service.price.toLocaleString("es-CL")}</span
+                >
+            </div>
+            {
+                service.description && (
+                    <p class="mt-2 text-xs leading-relaxed text-muted-foreground line-clamp-2">
+                        {service.description}
+                    </p>
+                )
+            }
+        </div>
+
+        <div class="mt-4 flex items-center justify-between">
+            <span
+                class="inline-flex items-center rounded-full bg-secondary/80 px-2.5 py-0.5 text-xs text-muted-foreground"
+            >
+                {service.duration_minutes} min
+            </span>
+            <span
+                class="check-indicator text-xs font-medium text-primary opacity-0 transition-opacity"
+            >
+                ✓ Seleccionado
+            </span>
+        </div>
     </div>
 </article>

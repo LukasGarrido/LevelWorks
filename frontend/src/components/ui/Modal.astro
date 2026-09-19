@@ -1,0 +1,16 @@
+---
+// src/components/ui/Modal.astro
+interface Props {
+    id: string;
+}
+const { id } = Astro.props;
+---
+
+<dialog
+    id={id}
+    class="backdrop:bg-black/70 backdrop:backdrop-blur-sm rounded-2xl border border-border bg-card text-foreground p-6 shadow-2xl max-w-md w-full m-auto transition-all"
+>
+    <div id={`${id}-content`} class="text-center space-y-4">
+        <!-- El contenido del modal se inyectará dinámicamente con JavaScript -->
+    </div>
+</dialog>

@@ -1,18 +1,20 @@
 ---
-// src/components/sections/Hero.astro
+import Button from "../ui/Button.astro";
 ---
 
 <section
     id="hero"
-    class="section-full justify-center bg-background fade-on-scroll"
+    class="section-full relative justify-center overflow-hidden bg-background fade-on-scroll"
 >
-    <div class="wrapper flex flex-col items-start text-left">
-        <span
-            class="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1 text-xs font-medium text-primary shadow-sm"
-        >
-            Autolavado con reserva online
-        </span>
+    <div
+        class="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style="background-image: url('/images/hero.png');"
+    >
+    </div>
 
+    <div class="absolute inset-0 bg-background/80 backdrop-blur-[1px]"></div>
+
+    <div class="wrapper relative z-10 flex flex-col items-start text-left">
         <h1
             class="mt-6 max-w-3xl font-display text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl md:text-6xl"
         >
@@ -28,20 +30,13 @@
         </p>
 
         <div class="mt-8 flex flex-wrap items-center justify-start gap-3">
-            <a
-                href="#reservar"
-                class="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-            >
+            <Button href="#reservar" variant="primary" size="lg">
                 <span>Reservar ahora</span>
-                <span class="text-base leading-none">&rarr;</span>
-            </a>
+            </Button>
 
-            <a
-                href="/admin"
-                class="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:border-foreground/30 hover:bg-accent"
-            >
+            <Button href="/admin" variant="secondary" size="lg">
                 Panel de administración
-            </a>
+            </Button>
         </div>
     </div>
 </section>
