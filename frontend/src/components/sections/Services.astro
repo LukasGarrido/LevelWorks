@@ -3,12 +3,11 @@ import { getServices } from "../../lib/api";
 import ServiceCard from "../ui/ServiceCard.astro";
 
 let services: Awaited<ReturnType<typeof getServices>> = [];
-let error = false;
 
 try {
     services = await getServices();
-} catch {
-    error = true;
+} catch (err) {
+    console.error("[Servicios] Error al obtener catálogo:", err);
 }
 ---
 
@@ -23,23 +22,11 @@ try {
         </div>
 
         {
-            error && (
-                <div class="rounded-2xl border border-destructive/30 bg-destructive/10 p-6 text-center text-sm text-destructive">
-                    Servicios no disponibles temporalmente.
+            services.length === 0 ? (
+                <div class="rounded-2xl border border-border/50 bg-card/40 p-8 text-center text-sm text-muted-foreground backdrop-blur-md">
+                    No hay servicios disponibles en este momento.
                 </div>
-            )
-        }
-
-        {
-            !error && services.length === 0 && (
-                <p class="text-center text-sm text-muted-foreground">
-                    Aún no hay servicios cargados.
-                </p>
-            )
-        }
-
-        {
-            !error && services.length > 0 && (
+            ) : (
                 <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {services.map((service) => (
                         <ServiceCard service={service} />
