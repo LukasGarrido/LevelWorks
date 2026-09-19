@@ -1,4 +1,7 @@
 ---
+// src/components/layout/Header.astro
+import Button from "../ui/Button.astro";
+
 const navItems = [
     { label: "Servicios", href: "/#servicios" },
     { label: "Cómo funciona", href: "/#como-funciona" },
@@ -14,9 +17,10 @@ const navItems = [
             href="/"
             class="font-display text-xl font-bold tracking-tight text-foreground"
         >
-            Xperience<span class="text-primary">.</span>
+            LevelWorks<span class="text-primary">.</span>
         </a>
-        <nav class="hidden gap-6 md:flex">
+
+        <nav class="hidden md:flex items-center gap-8 mx-auto">
             {
                 navItems.map((item) => (
                     <a
@@ -28,11 +32,11 @@ const navItems = [
                 ))
             }
         </nav>
-        <a
-            href="/#reservar"
-            class="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-        >
-            Agendar cita
-        </a>
+
+        <div class="flex items-center gap-3">
+            <Button href="/admin" variant="ghost" size="sm">
+                Acceso Admin
+            </Button>
+        </div>
     </div>
 </header>
